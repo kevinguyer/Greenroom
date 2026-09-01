@@ -1,0 +1,9 @@
+# Local working materials — never publish (reference deck contains private company content)
+reference_deck.html
+better-deck-tool.md
+
+# Exports and scratch
+*.deck.json
+*.greenroom.json
+*.player.html
+*.tmp
