@@ -36,7 +36,7 @@ Four built-in looks — **Emerald & Gold**, **Midnight Slate**, **Ember**, and t
 ### Share
 - **JSON menu** (Import · Export · View/edit) — a deck is a single portable JSON file. Import offers *open as new deck* or *append to the current one*.
 - **Publish Player** — export a standalone HTML that **is** the presentation: recipients double-click and it opens straight into the show, no designer, nothing to import.
-- **Print / PDF** — slide pages, or a **Handout** mode with speaker notes under every slide.
+- **Print / PDF** — slide pages, a **Handout** mode with speaker notes under every slide, or a **Plain** mode: black-on-white, three slides per page with ruled note lines beside each.
 - **Snapshots** — named restore points that survive reloads, managed in the Decks dialog.
 
 ### ✨ AI Kickstart

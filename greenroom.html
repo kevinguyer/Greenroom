@@ -272,6 +272,14 @@ input, textarea, select { font-family:inherit; }
 .hn-title { font-family:Poppins; font-weight:700; font-size:15px; color:#F2DD9B; margin-bottom:6px; }
 .hn-cue { font-style:italic; color:#E3C567; margin-bottom:6px; }
 .hn-body { white-space:pre-wrap; }
+/* plain mode: black-on-white slides, three per portrait page, ruled note lines beside each */
+.plainpage { width:850px; margin:22px auto; background:#fff; padding:40px 44px; box-shadow:0 10px 40px rgba(0,0,0,.5); display:flex; flex-direction:column; gap:26px; break-inside:avoid; page-break-inside:avoid; }
+.plainrow { display:flex; gap:22px; align-items:stretch; }
+.plainrow .ppage { flex:0 0 58%; width:auto; margin:0; background:#fff; box-shadow:none; border:1px solid #9a9a9a; }
+.plainrow .pstage { filter:grayscale(1); }
+.plainnotes { flex:1; min-width:0; display:flex; flex-direction:column; }
+.pn-title { font-family:Poppins; font-weight:700; font-size:12px; color:#333; margin-bottom:6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pn-line { flex:1; border-bottom:1px solid #b9b9b9; }
 @media print {
   body { overflow:visible; background:#fff; }
   .printbar { display:none; }
@@ -279,6 +287,8 @@ input, textarea, select { font-family:inherit; }
   .ppage { width:100%; margin:0; box-shadow:none; break-after:page; page-break-after:always; border:none; }
   .hpage { width:100%; margin:0 0 18px; background:none; border-radius:0; padding:0 0 18px; break-after:page; page-break-after:always; }
   .hpage .ppage { width:80%; break-after:auto; page-break-after:auto; box-shadow:0 0 0 1px #ccc; }
+  .plainpage { width:100%; margin:0; padding:0; box-shadow:none; break-after:page; page-break-after:always; }
+  .plainrow .ppage { width:auto; break-after:auto; page-break-after:auto; }
   .hnotes { color:#222; }
   .hn-title { color:#6b511f; }
   .hn-cue { color:#8a6a28; }
@@ -1512,6 +1522,7 @@ const GUIDE_TABS = {
       <li><b>Snapshots</b> (in the Decks dialog) are named restore points that survive reloads — take one before a big reorganization.</li>
       <li><b>Importing</b> a JSON now offers “append to current deck” — reuse a section from an old deck without leaving this one.</li>
       <li>The print view has a <b>Handout</b> mode: every slide with its speaker notes and cues beneath it — a rehearsal script or leave-behind.</li>
+      <li><b>Plain</b> mode is the ink-friendly one: black-on-white slides, three per portrait page, each with ruled lines beside it for handwritten notes — the classic audience handout.</li>
       <li><b>Print / PDF</b> lays out every slide for the browser’s print dialog (Landscape, margins None, Background graphics on). Presenter cues are left out of it; the organization mark stays in.</li>
     </ul>` }
 };
@@ -2111,32 +2122,46 @@ function wakeChrome() {
 }
 
 /* ---------------- print view ---------------- */
-let printHandout = false;
+let printMode = 'slides';   /* 'slides' | 'handout' | 'plain' */
+/* theme variables for plain printing: every layout draws only through these, so swapping them yields black-on-white */
+const PRINT_PLAIN_VARS = '--ink:#222;--ink-rgb:34,34,34;--acc:#000;--acc-rgb:0,0,0;--accB:#333;--acc2:#555;--acc2-rgb:85,85,85;--acc2Soft:#777;--deep:#fff;--card-rgb:0,0,0;--chromebg:#fff;--railbg:#fff;--panelbg:#fff';
+const PLAIN_PER_PAGE = 3, PLAIN_LINES = 10;
 function renderPrint() {
   const t = theme(deck);
   const slides = deck.slides.filter(s => !s.hidden);
-  const stage = s => `<div class="ppage"><div class="pstage" style="width:1920px;height:1080px;background:${t.bg};${themeVarStyle(t)}">${renderStage(s, deck, 'static', { cue:false })}</div></div>`;
-  const pages = printHandout
-    ? slides.map((s, i) => `
+  const plain = printMode === 'plain', handout = printMode === 'handout';
+  const stage = s => `<div class="ppage"><div class="pstage" style="width:1920px;height:1080px;background:${plain ? '#fff' : t.bg};${plain ? PRINT_PLAIN_VARS : themeVarStyle(t)}">${renderStage(s, deck, 'static', { cue:false })}</div></div>`;
+  let pages;
+  if (handout) {
+    pages = slides.map((s, i) => `
       <div class="hpage">${stage(s)}
         <div class="hnotes">
           <div class="hn-title">${i+1} · ${esc(slideTitle(s))}</div>
           ${s.cue ? `<div class="hn-cue">✎ ${esc(s.cue)}</div>` : ''}
           <div class="hn-body">${esc(s.notes) || '<span style="opacity:.45">—</span>'}</div>
-        </div></div>`).join('')
-    : slides.map(s => stage(s)).join('');
+        </div></div>`).join('');
+  } else if (plain) {
+    const rows = slides.map((s, i) => `<div class="plainrow">${stage(s)}<div class="plainnotes"><div class="pn-title">${i+1} · ${esc(slideTitle(s))}</div>${'<div class="pn-line"></div>'.repeat(PLAIN_LINES)}</div></div>`);
+    pages = '';
+    for (let i = 0; i < rows.length; i += PLAIN_PER_PAGE) pages += `<div class="plainpage">${rows.slice(i, i + PLAIN_PER_PAGE).join('')}</div>`;
+  } else {
+    pages = slides.map(s => stage(s)).join('');
+  }
+  const tip = plain ? 'choose Portrait and margins None. Background graphics are optional here.'
+    : `choose ${handout ? 'Portrait' : 'Landscape'}, margins None, and enable Background graphics.`;
   $('#app').innerHTML = `
   <div id="printview">
     <div class="printbar">
       <button class="btn" data-act="backdesign">← Back to designer</button>
-      <button class="btn ${printHandout?'':'primary'}" data-act="pm-slides">Slides</button>
-      <button class="btn ${printHandout?'primary':''}" data-act="pm-handout">Handout (with notes)</button>
+      <button class="btn ${printMode==='slides'?'primary':''}" data-act="pm-slides">Slides</button>
+      <button class="btn ${handout?'primary':''}" data-act="pm-handout">Handout (with notes)</button>
+      <button class="btn ${plain?'primary':''}" data-act="pm-plain" title="Black-on-white slides, three per page, with ruled lines beside each for handwritten notes">Plain (B&amp;W + note lines)</button>
       <button class="btn primary" onclick="window.print()">Print / Save as PDF</button>
-      <span class="note">Tip: choose ${printHandout ? 'Portrait' : 'Landscape'}, margins None, and enable Background graphics.</span>
+      <span class="note">Tip: ${tip}</span>
     </div>
     <div id="pages">${pages}</div>
   </div>
-  <style>@media print { @page { size:${printHandout ? '8.5in 11in' : '11in 6.19in'}; margin:${printHandout ? '.5in' : '0'}; } }</style>`;
+  <style>@media print { @page { size:${printMode === 'slides' ? '11in 6.19in' : '8.5in 11in'}; margin:${printMode === 'slides' ? '0' : '.5in'}; } }</style>`;
   const fit = () => $$('.ppage').forEach(pg => {
     const st = $('.pstage', pg);
     st.style.transform = `scale(${pg.getBoundingClientRect().width / 1920})`;
@@ -2185,8 +2210,9 @@ document.addEventListener('click', e => {
     else if (a === 'undo') doUndo();
     else if (a === 'redo') doRedo();
     else if (a === 'sorter') sorterModal();
-    else if (a === 'pm-slides') { printHandout = false; renderPrint(); }
-    else if (a === 'pm-handout') { printHandout = true; renderPrint(); }
+    else if (a === 'pm-slides') { printMode = 'slides'; renderPrint(); }
+    else if (a === 'pm-handout') { printMode = 'handout'; renderPrint(); }
+    else if (a === 'pm-plain') { printMode = 'plain'; renderPrint(); }
     else if (a === 'decks') decksModal();
     else if (a === 'import') importJSON();
     else if (a === 'export') exportJSON();
