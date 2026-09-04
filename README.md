@@ -2,7 +2,7 @@
 
 **A one-file slide studio.** Design a deck, present it full-screen, and carry the whole thing anywhere — designer, presenter, themes, and your saved decks all live in a single HTML file that runs straight from disk. No install, no server, no internet, no account.
 
-> Current version: **1.3.0** (shown next to the logo in the app)
+> Current version: **1.5.0** (shown next to the logo in the app)
 
 ## Quick start
 
@@ -10,15 +10,16 @@
 2. Double-click it (Chrome or Edge recommended; Firefox works too).
 3. It opens in the **designer** with a sample deck — poke around, then hit **▶ Present**.
 
-A built-in guide opens on first launch and stays available under **Guide** in the top bar. Your work autosaves to the browser as you type.
+A built-in guide opens on first launch and stays available under the **?** button at the top right. Your work autosaves to the browser as you type.
 
 ## What's inside
 
 ### Design
-- **13 slide layouts** — hero, section splash, statement, topic grid, split + card, comparison, image, video, bulleted list, big callout, big stats, timeline, and closing — chosen from a **visual picker** with live thumbnails. Picked wrong? *Layout → Change…* previews **your own content** poured into every other layout before you commit.
+- **21 slide layouts** — hero, section splash, statement, topic grid, split + card, comparison, before / after, image, video, code window, bulleted list, do / don’t, big callout, quote, big stats, data bars, progress ring, timeline, process flow, people grid, and closing — chosen from a **visual picker** with live thumbnails. Picked wrong? *Layout → Change…* previews **your own content** poured into every other layout before you commit.
 - **Rich text markup** in any field: `[[gold accent]]`, `{{orange accent}}`, `[link text](url)` (opens in a new tab), and line breaks.
 - **Sections & grouping** — child slides inherit their section's name as an eyebrow label and nest in the thumbnail rail.
 - **Slide sorter** (⊞) — the whole deck as a drag-to-reorder grid. **Ctrl+F** searches all text across the deck.
+- **Organization mark** — a deck-level company name, disclaimer, or copyright line shown small on the left of every slide (top or bottom), with a per-slide hide for title slides.
 - **Undo/redo** (Ctrl+Z / Ctrl+Y), **hidden backup slides**, per-slide **presenter cues** and **speaker notes**, image and video embedding (base64 — the deck stays one portable file), and an overflow warning when content runs off the slide.
 
 ### Themes
@@ -33,9 +34,9 @@ Four built-in looks — **Emerald & Gold**, **Midnight Slate**, **Ember**, and t
 - **Autoplay / kiosk mode**: seconds per slide (with per-slide overrides), optional loop — for lobby screens and self-running demos.
 
 ### Share
-- **Export / Import JSON** — a deck is a single portable JSON file. Import offers *open as new deck* or *append to the current one*.
+- **JSON menu** (Import · Export · View/edit) — a deck is a single portable JSON file. Import offers *open as new deck* or *append to the current one*.
 - **Publish Player** — export a standalone HTML that **is** the presentation: recipients double-click and it opens straight into the show, no designer, nothing to import.
-- **Print / PDF** — slide pages, or a **Handout** mode with speaker notes under every slide.
+- **Print / PDF** — slide pages, a **Handout** mode with speaker notes under every slide, or a **Plain** mode: black-on-white, three slides per page with ruled note lines beside each.
 - **Snapshots** — named restore points that survive reloads, managed in the Decks dialog.
 
 ### ✨ AI Kickstart

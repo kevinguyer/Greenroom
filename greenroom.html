@@ -36,6 +36,7 @@ input, textarea, select { font-family:inherit; }
 @keyframes growX { from { transform:scaleX(0); } to { transform:scaleX(1); } }
 @keyframes zoomIn { from { opacity:0; transform:scale(.86); } to { opacity:1; transform:scale(1); } }
 @keyframes slideL { from { opacity:0; transform:translateX(-60px); } to { opacity:1; transform:none; } }
+@keyframes ringIn { from { stroke-dashoffset:var(--ring-full); } }
 @keyframes drift { 0% { transform:translate(0,0); opacity:.25; } 50% { transform:translate(24px,-38px); opacity:.9; } 100% { transform:translate(0,0); opacity:.25; } }
 @keyframes breathe { 0%,100% { transform:scale(1); opacity:.5; } 50% { transform:scale(1.18); opacity:.85; } }
 @keyframes nudge { 0%,100% { transform:translateX(0); } 50% { transform:translateX(14px); } }
@@ -61,16 +62,28 @@ input, textarea, select { font-family:inherit; }
 .brand span { color:#e8e6df; }
 .brand .ver { font-family:Figtree, sans-serif; font-style:normal; font-weight:500; font-size:10px; letter-spacing:.05em; color:rgba(232,230,223,.38); margin-left:7px; vertical-align:2px; }
 .gver { font-size:11px; color:rgba(232,230,223,.35); margin-right:auto; align-self:center; }
-.deck-title { background:rgba(var(--card-rgb),.05); border:1px solid rgba(227,197,103,.16); color:#f2f0e9; border-radius:8px; padding:7px 12px; font-size:14px; width:280px; }
+.deck-title { background:rgba(var(--card-rgb),.05); border:1px solid rgba(227,197,103,.16); color:#f2f0e9; border-radius:8px; padding:7px 12px; font-size:14px; flex:1 1 220px; min-width:150px; max-width:420px; }
 .deck-title:focus { outline:none; border-color:rgba(227,197,103,.5); }
 .tb-spacer { flex:1; }
+.tb-sep { width:1px; height:24px; background:rgba(227,197,103,.16); margin:0 4px; flex:none; }
 .btn { background:rgba(255,255,255,.06); color:#e8e6df; border:1px solid rgba(227,197,103,.2); border-radius:8px; padding:7px 13px; font-size:13px; cursor:pointer; white-space:nowrap; }
 .btn:hover { background:rgba(227,197,103,.14); border-color:rgba(227,197,103,.4); }
 .btn.primary { background:linear-gradient(96deg,#E3C567,#F2DD9B); color:#0B2318; font-weight:700; border:none; }
 .btn.primary:hover { filter:brightness(1.06); }
 .btn.danger:hover { background:rgba(222,80,60,.2); border-color:rgba(222,80,60,.5); }
 .btn.small { padding:4px 9px; font-size:12px; }
-.save-dot { font-size:11px; color:rgba(232,230,223,.45); min-width:52px; text-align:right; }
+.btn:disabled { opacity:.32; cursor:default; }
+.btn:disabled:hover { background:rgba(255,255,255,.06); border-color:rgba(227,197,103,.2); }
+.btn.round { width:32px; height:32px; padding:0; border-radius:50%; font-family:Poppins; font-weight:700; font-size:14px; display:inline-grid; place-items:center; flex:none; }
+.save-dot { font-size:11px; color:rgba(232,230,223,.45); min-width:62px; white-space:nowrap; }
+.tbmenu { position:relative; }
+.tbmenu .caret { display:inline-block; margin-left:7px; font-size:9px; opacity:.6; vertical-align:1px; }
+.tbmenu.open > .btn { background:rgba(227,197,103,.14); border-color:rgba(227,197,103,.4); }
+.tbmenu-pop { display:none; position:absolute; top:calc(100% + 6px); left:0; min-width:230px; background:#131c16; border:1px solid rgba(227,197,103,.28); border-radius:10px; padding:6px; z-index:60; box-shadow:0 14px 34px rgba(0,0,0,.45); }
+.tbmenu.open .tbmenu-pop { display:block; }
+.tbmenu-pop button { display:flex; width:100%; align-items:center; background:none; border:none; color:#e8e6df; font-size:13px; text-align:left; padding:8px 10px; border-radius:7px; cursor:pointer; white-space:nowrap; }
+.tbmenu-pop button:hover { background:rgba(227,197,103,.14); color:#F2DD9B; }
+.tbmenu-pop button small { margin-left:auto; padding-left:20px; font-size:11px; color:rgba(232,230,223,.4); }
 
 .main { display:grid; grid-template-columns:270px 1fr 330px; min-height:0; }
 
@@ -260,6 +273,14 @@ input, textarea, select { font-family:inherit; }
 .hn-title { font-family:Poppins; font-weight:700; font-size:15px; color:#F2DD9B; margin-bottom:6px; }
 .hn-cue { font-style:italic; color:#E3C567; margin-bottom:6px; }
 .hn-body { white-space:pre-wrap; }
+/* plain mode: black-on-white slides, three per portrait page, ruled note lines beside each */
+.plainpage { width:850px; margin:22px auto; background:#fff; padding:40px 44px; box-shadow:0 10px 40px rgba(0,0,0,.5); display:flex; flex-direction:column; gap:26px; break-inside:avoid; page-break-inside:avoid; }
+.plainrow { display:flex; gap:22px; align-items:stretch; }
+.plainrow .ppage { flex:0 0 58%; width:auto; margin:0; background:#fff; box-shadow:none; border:1px solid #9a9a9a; }
+.plainrow .pstage { filter:grayscale(1); }
+.plainnotes { flex:1; min-width:0; display:flex; flex-direction:column; }
+.pn-title { font-family:Poppins; font-weight:700; font-size:12px; color:#333; margin-bottom:6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pn-line { flex:1; border-bottom:1px solid #b9b9b9; }
 @media print {
   body { overflow:visible; background:#fff; }
   .printbar { display:none; }
@@ -267,6 +288,8 @@ input, textarea, select { font-family:inherit; }
   .ppage { width:100%; margin:0; box-shadow:none; break-after:page; page-break-after:always; border:none; }
   .hpage { width:100%; margin:0 0 18px; background:none; border-radius:0; padding:0 0 18px; break-after:page; page-break-after:always; }
   .hpage .ppage { width:80%; break-after:auto; page-break-after:auto; box-shadow:0 0 0 1px #ccc; }
+  .plainpage { width:100%; margin:0; padding:0; box-shadow:none; break-after:page; page-break-after:always; }
+  .plainrow .ppage { width:auto; break-after:auto; page-break-after:auto; }
   .hnotes { color:#222; }
   .hn-title { color:#6b511f; }
   .hn-cue { color:#8a6a28; }
@@ -278,7 +301,7 @@ input, textarea, select { font-family:inherit; }
 
 <script>
 'use strict';
-const APP_VERSION = '1.3.0';
+const APP_VERSION = '1.5.0';
 /* A published player file carries its deck in a #baked-deck tag (in <head>, so it's parsed before this script) */
 const BAKED = document.getElementById('baked-deck');
 const PLAYER = !!BAKED;
@@ -688,6 +711,209 @@ const LAYOUTS = {
       return `<div style="position:absolute;inset:0;padding:${ey?'80px 150px 90px':'90px 150px'};display:flex;flex-direction:column">
         ${ey ? eyebrowBar(ey) : ''}${inner}</div>`;
     }
+  },
+
+  quote: {
+    name:'Quote', icon:'❞',
+    desc:'A big quotation with a giant ghost quote mark and who said it — testimonials, customer voice, a memorable line.',
+    fields:[ FA('quote','Quote', RICH_HINT, 4), F('name','Attribution name'), F('role','Role / company (optional)') ],
+    defaults:{ quote:'The best way to predict the future is to [[build it]].', name:'A Customer', role:'Head of Product, Acme' },
+    render(c, ey) {
+      const inner = `
+        <div style="position:relative;padding-left:40px">
+          <div class="fp" style="position:absolute;left:-70px;top:-170px;font-weight:800;font-size:520px;line-height:1;color:rgba(var(--acc-rgb),.14);pointer-events:none;${an('fade',1.2)}">“</div>
+          <div style="position:relative;font-size:70px;line-height:1.3;font-weight:500;max-width:1480px;text-wrap:pretty;${an('rise',.9,.15)}">${rich(c.quote)}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:28px;margin-top:64px;padding-left:40px;${an('rise',.9,.45)}">
+          <div style="width:72px;height:5px;background:linear-gradient(90deg,var(--acc),var(--acc2));border-radius:4px"></div>
+          <div>
+            <div class="fp" style="font-weight:700;font-size:38px">${rich(c.name)}</div>
+            ${c.role ? `<div style="font-size:28px;color:rgba(var(--ink-rgb),.6);margin-top:6px">${rich(c.role)}</div>` : ''}
+          </div>
+        </div>`;
+      return ey ? eyebrowWrap(ey, inner) : `<div style="position:absolute;inset:0;padding:0 150px;display:flex;flex-direction:column;justify-content:center">${inner}</div>`;
+    }
+  },
+
+  bars: {
+    name:'Data Bars', icon:'▤',
+    desc:'A simple horizontal bar chart — 2–6 labelled values, bars scaled to the largest. No chart library, prints cleanly.',
+    fields:[ FA('title','Heading', RICH_HINT),
+      FL('items','Bars', [ F('label','Label'), F('value','Value (a plain number — sets the bar length)'), F('display','Shown value (optional, e.g. 42% or $1.2M)'), FS('tone','Color', [['gold','Gold'],['orange','Orange'],['ink','Neutral']]) ], 6, 'Bar') ],
+    defaults:{ title:'Where the [[growth]] came from', items:[ {label:'Enterprise', value:'62', display:'62%', tone:'gold'}, {label:'Mid-market', value:'27', display:'27%', tone:'gold'}, {label:'Self-serve', value:'11', display:'11%', tone:'orange'} ] },
+    render(c, ey) {
+      const items = c.items || [];
+      const num = v => Math.max(0, parseFloat(String(v == null ? '' : v).replace(/[^0-9.\-]/g, '')) || 0);
+      const max = Math.max(1, ...items.map(it => num(it.value)));
+      const many = items.length > 4, h = many ? 46 : 58, fs = many ? 32 : 38;
+      const rows = items.map((it, i) => {
+        const fill = it.tone==='orange' ? 'linear-gradient(90deg,var(--acc2),rgba(var(--acc2-rgb),.7))' : it.tone==='ink' ? 'rgba(var(--ink-rgb),.5)' : 'linear-gradient(90deg,var(--acc),var(--accB))';
+        const vcol = it.tone==='orange' ? 'var(--acc2)' : it.tone==='ink' ? 'rgba(var(--ink-rgb),.8)' : 'var(--acc)';
+        return `<div style="display:flex;align-items:center;gap:36px;${an('rise',.7,.2+i*.12)}">
+          <div style="flex:none;width:440px;font-size:${fs}px;font-weight:600;line-height:1.2;text-align:right;color:rgba(var(--ink-rgb),.88)">${rich(it.label)}</div>
+          <div style="flex:1;height:${h}px;background:rgba(var(--card-rgb),.05);border-radius:12px;overflow:hidden">
+            <div style="height:100%;width:${(num(it.value) / max * 100).toFixed(1)}%;background:${fill};border-radius:12px;transform-origin:left;${an('growX',1,.35+i*.12)}"></div></div>
+          <div class="fp" style="flex:none;width:220px;font-weight:800;font-size:${fs+4}px;color:${vcol}">${rich(it.display || it.value)}</div>
+        </div>`;
+      }).join('');
+      const inner = `<div class="fp" style="font-weight:800;font-size:104px;letter-spacing:-.025em;${an('rise',.8)}">${rich(c.title)}</div>
+        <div style="display:flex;flex-direction:column;gap:${many ? 26 : 36}px;margin-top:70px">${rows}</div>`;
+      return ey ? eyebrowWrap(ey, inner) : `<div style="position:absolute;inset:0;padding:0 150px;display:flex;flex-direction:column;justify-content:center">${inner}</div>`;
+    }
+  },
+
+  process: {
+    name:'Process Flow', icon:'⇢',
+    desc:'3–5 numbered steps joined by a line — how something works, a workflow, a sequence of stages.',
+    fields:[ FA('title','Heading', RICH_HINT),
+      FL('items','Steps', [ F('title','Step title'), FA('sub','One-liner (optional)', '', 2) ], 5, 'Step') ],
+    defaults:{ title:'How it [[works]]', items:[ {title:'Capture', sub:'Notes land in the inbox'}, {title:'Shape', sub:'Turn them into slides'}, {title:'Present', sub:'Walk the room through it'} ] },
+    render(c, ey) {
+      const items = c.items || [];
+      const n = items.length || 1, small = n > 3, d = small ? 86 : 104;
+      const cells = items.map((it, i) => `
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 16px;${an('rise',.8,.3+i*.16)}">
+          <div class="fp" style="width:${d}px;height:${d}px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:${small?36:44}px;color:var(--deep);background:linear-gradient(135deg,var(--acc),var(--accB));box-shadow:0 0 0 10px rgba(var(--acc-rgb),.12)">${i+1}</div>
+          <div class="fp" style="font-weight:700;font-size:${small?32:38}px;margin-top:34px;line-height:1.2">${rich(it.title)}</div>
+          ${it.sub ? `<div style="font-size:${small?24:28}px;line-height:1.35;color:rgba(var(--ink-rgb),.62);margin-top:12px;max-width:${small?300:380}px;text-wrap:pretty">${rich(it.sub)}</div>` : ''}
+        </div>`).join('');
+      const inner = `
+        <div class="fp" style="font-weight:800;font-size:104px;letter-spacing:-.025em;${an('rise',.8)}">${rich(c.title)}</div>
+        <div style="position:relative;margin-top:100px">
+          <div style="position:absolute;left:${(50 / n).toFixed(2)}%;right:${(50 / n).toFixed(2)}%;top:${d / 2 - 2}px;height:4px;background:linear-gradient(90deg,var(--acc),var(--acc2));opacity:.55;transform-origin:left;${an('growX',1.1,.25)}"></div>
+          <div style="position:relative;display:flex;align-items:flex-start">${cells}</div>
+        </div>`;
+      return ey ? eyebrowWrap(ey, inner) : `<div style="position:absolute;inset:0;padding:0 150px;display:flex;flex-direction:column;justify-content:center">${inner}</div>`;
+    }
+  },
+
+  code: {
+    name:'Code Window', icon:'‹›',
+    desc:'A monospace code or terminal snippet in a framed window with an optional filename tab and caption. Keep it to ~14 short lines.',
+    fields:[ FA('title','Heading (optional)', RICH_HINT, 2), F('file','Filename / tab label (optional)'),
+      FA('code','Code', '[[gold]] and {{orange}} highlight tokens or lines; indentation is kept', 8), FA('caption','Caption (optional)', '', 2) ],
+    defaults:{ title:'', file:'app.js', code:'function greet(name) {\n  return `Hello, ${name}!`;\n}\n\nconsole.log([[greet]]({{"Greenroom"}}));', caption:'' },
+    render(c, ey) {
+      const lines = String(c.code || '').split('\n').length;
+      const fs = lines > 20 ? 22 : lines > 14 ? 26 : 30;
+      const win = `<div style="border-radius:22px;overflow:hidden;border:1px solid rgba(var(--acc-rgb),.3);background:rgba(var(--card-rgb),.05);box-shadow:0 40px 90px -40px rgba(0,0,0,.6);max-height:${c.title ? 720 : 860}px;display:flex;flex-direction:column;${an('zoomIn',.9,.2)}">
+        <div style="display:flex;align-items:center;gap:12px;padding:20px 28px;border-bottom:1px solid rgba(var(--ink-rgb),.1)">
+          <div style="width:16px;height:16px;border-radius:50%;background:var(--acc2)"></div>
+          <div style="width:16px;height:16px;border-radius:50%;background:var(--acc)"></div>
+          <div style="width:16px;height:16px;border-radius:50%;background:rgba(var(--ink-rgb),.3)"></div>
+          ${c.file ? `<div style="margin-left:18px;font-family:ui-monospace,Consolas,monospace;font-size:22px;color:rgba(var(--ink-rgb),.55)">${esc(c.file)}</div>` : ''}
+        </div>
+        <div style="padding:34px 40px;font-family:ui-monospace,Consolas,'Courier New',monospace;font-size:${fs}px;line-height:1.55;white-space:pre-wrap;overflow:hidden;color:rgba(var(--ink-rgb),.92);text-align:left">${rich(c.code)}</div>
+      </div>`;
+      const inner = `
+        ${c.title ? `<div class="fp" style="font-weight:800;font-size:76px;letter-spacing:-.025em;margin-bottom:38px;${an('rise',.8,.1)}">${rich(c.title)}</div>` : ''}
+        ${win}
+        ${c.caption ? `<div style="font-size:30px;color:rgba(var(--ink-rgb),.62);margin-top:30px;${an('fade',.8,.5)}">${rich(c.caption)}</div>` : ''}`;
+      return ey ? eyebrowWrap(ey, inner) : `<div style="position:absolute;inset:0;padding:0 150px;display:flex;flex-direction:column;justify-content:center">${inner}</div>`;
+    }
+  },
+
+  beforeafter: {
+    name:'Before / After', icon:'⇄',
+    desc:'Two panels with an arrow between — the old way muted on the left, the new way glowing on the right. A transformation with a verdict built in.',
+    fields:[ FA('title','Heading', RICH_HINT), F('beforeKicker','Left label'), FA('before','Left text', RICH_HINT), F('afterKicker','Right label'), FA('after','Right text', RICH_HINT) ],
+    defaults:{ title:'From [[this]] to [[that]]', beforeKicker:'Before', before:'Decks lived in six places and nobody had the latest one.', afterKicker:'After', after:'One file. Open it anywhere. Always current.' },
+    render(c, ey) {
+      const panel = (kick, text, on, d) => `<div style="border-radius:30px;padding:60px 56px;min-height:420px;display:flex;flex-direction:column;justify-content:center;${on
+        ? 'background:rgba(var(--acc-rgb),.09);border:1px solid rgba(var(--acc-rgb),.55);box-shadow:0 0 80px -20px rgba(var(--acc-rgb),.45)'
+        : 'background:rgba(var(--card-rgb),.03);border:1px solid rgba(var(--ink-rgb),.18)'};${an('rise',.9,d)}">
+        <div class="fp" style="font-weight:600;font-size:24px;letter-spacing:.3em;text-transform:uppercase;color:${on?'var(--acc)':'rgba(var(--ink-rgb),.5)'}">${rich(kick)}</div>
+        <div style="font-size:44px;line-height:1.35;margin-top:30px;text-wrap:pretty;color:${on?'rgba(var(--ink-rgb),.96)':'rgba(var(--ink-rgb),.62)'}">${rich(text)}</div>
+      </div>`;
+      const inner = `
+        <div class="fp" style="font-weight:800;font-size:104px;letter-spacing:-.025em;${an('rise',.8)}">${rich(c.title)}</div>
+        <div style="display:grid;grid-template-columns:1fr 150px 1fr;align-items:center;margin-top:70px">
+          ${panel(c.beforeKicker, c.before, false, .25)}
+          <div class="fp" style="text-align:center;font-weight:800;font-size:110px;line-height:1;color:var(--acc);${an('zoomIn',.8,.55)}">→</div>
+          ${panel(c.afterKicker, c.after, true, .4)}
+        </div>`;
+      return ey ? eyebrowWrap(ey, inner) : `<div style="position:absolute;inset:0;padding:0 150px;display:flex;flex-direction:column;justify-content:center">${inner}</div>`;
+    }
+  },
+
+  ring: {
+    name:'Progress Ring', icon:'◔',
+    desc:'One big percentage drawn as an animated ring, with a heading and supporting text beside it — completion, adoption, a survey result.',
+    fields:[ F('value','Percent (0–100)'), F('display','Text inside the ring (optional, defaults to the percent)'), FA('title','Heading', RICH_HINT), FA('body','Supporting text (optional)', RICH_HINT), FS('tone','Ring color', [['gold','Gold'],['orange','Orange']]) ],
+    defaults:{ value:'72', display:'', title:'of teams have [[switched]]', body:'Up from 41% at the start of the year.', tone:'gold' },
+    render(c, ey) {
+      const pct = Math.max(0, Math.min(100, parseFloat(c.value) || 0));
+      const R = 84, C = 2 * Math.PI * R, off = C * (1 - pct / 100);
+      const col = c.tone === 'orange' ? 'var(--acc2)' : 'var(--acc)';
+      const label = c.display || (pct + '%');
+      const inner = `<div style="display:grid;grid-template-columns:560px 1fr;align-items:center;gap:110px">
+        <div style="position:relative;width:560px;height:560px;${an('zoomIn',.8)}">
+          <svg viewBox="0 0 200 200" width="560" height="560" style="display:block;transform:rotate(-90deg)">
+            <circle cx="100" cy="100" r="${R}" fill="none" stroke="rgba(var(--ink-rgb),.12)" stroke-width="14"/>
+            <circle cx="100" cy="100" r="${R}" fill="none" stroke="${col}" stroke-width="14" stroke-linecap="round" stroke-dasharray="${C.toFixed(2)}" stroke-dashoffset="${off.toFixed(2)}" style="--ring-full:${C.toFixed(2)};${an('ringIn',1.5,.3)}"/>
+          </svg>
+          <div class="fp" style="position:absolute;inset:0;display:grid;place-items:center;font-weight:800;font-size:${String(label).length > 4 ? 88 : 124}px;letter-spacing:-.04em;color:${col};${an('fade',1,.8)}">${rich(label)}</div>
+        </div>
+        <div>
+          <div class="fp" style="font-weight:800;font-size:96px;line-height:1.02;letter-spacing:-.03em;${an('rise',.9,.2)}">${rich(c.title)}</div>
+          ${c.body ? `<div style="font-size:40px;line-height:1.4;color:rgba(var(--ink-rgb),.72);margin-top:40px;max-width:900px;text-wrap:pretty;${an('rise',.9,.4)}">${rich(c.body)}</div>` : ''}
+        </div></div>`;
+      return ey ? eyebrowWrap(ey, inner) : `<div style="position:absolute;inset:0;padding:0 150px;display:flex;flex-direction:column;justify-content:center">${inner}</div>`;
+    }
+  },
+
+  people: {
+    name:'People Grid', icon:'👥',
+    desc:'2–6 people cards with auto-generated initials avatars — team intros, owners, speakers.',
+    fields:[ FA('title','Heading', RICH_HINT),
+      FL('items','People', [ F('name','Name'), F('role','Role / title'), FA('line','One-liner (optional)', '', 2) ], 6, 'Person') ],
+    defaults:{ title:'Meet the [[team]]', items:[ {name:'Ada Lovelace', role:'Engineering', line:''}, {name:'Grace Hopper', role:'Platform', line:''}, {name:'Alan Turing', role:'Research', line:''} ] },
+    render(c, ey) {
+      const items = c.items || [];
+      const n = items.length || 1, wide = n > 3, cols = wide ? 3 : n;
+      const initials = nm => plain(nm).trim().split(/\s+/).map(w => w[0] || '').slice(0, 2).join('').toUpperCase();
+      const cards = items.map((it, i) => {
+        const grad = i % 2 ? 'linear-gradient(135deg,var(--acc2),var(--acc2Soft))' : 'linear-gradient(135deg,var(--acc),var(--accB))';
+        const av = `<div class="fp" style="flex:none;width:${wide?96:130}px;height:${wide?96:130}px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:${wide?38:50}px;color:var(--deep);background:${grad}">${esc(initials(it.name))}</div>`;
+        return `<div style="display:flex;${wide?'align-items:center;gap:30px':'flex-direction:column;align-items:center;text-align:center;gap:26px'};background:rgba(var(--card-rgb),.045);border:1px solid rgba(var(--acc-rgb),.2);border-radius:26px;padding:${wide?'34px 38px':'54px 40px'};${an('rise',.8,.25+i*.12)}">
+          ${av}
+          <div style="min-width:0">
+            <div class="fp" style="font-weight:700;font-size:${wide?32:38}px;line-height:1.15">${rich(it.name)}</div>
+            ${it.role ? `<div class="fp" style="font-weight:600;font-size:${wide?20:22}px;letter-spacing:.2em;text-transform:uppercase;color:rgba(var(--acc-rgb),.85);margin-top:10px">${rich(it.role)}</div>` : ''}
+            ${it.line ? `<div style="font-size:${wide?24:27}px;line-height:1.35;color:rgba(var(--ink-rgb),.62);margin-top:12px;text-wrap:pretty">${rich(it.line)}</div>` : ''}
+          </div></div>`;
+      }).join('');
+      const inner = `<div class="fp" style="font-weight:800;font-size:104px;letter-spacing:-.025em;${an('rise',.8)}">${rich(c.title)}</div>
+        <div style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:34px;margin-top:70px">${cards}</div>`;
+      return ey ? eyebrowWrap(ey, inner) : `<div style="position:absolute;inset:0;padding:0 150px;display:flex;flex-direction:column;justify-content:center">${inner}</div>`;
+    }
+  },
+
+  dodont: {
+    name:'Do / Don’t', icon:'✓',
+    desc:'Two columns of short rules — checkmarks on the left, crosses on the right. Guidelines, standards, etiquette.',
+    fields:[ FA('title','Heading', RICH_HINT), F('doHead','Left heading'), FL('dos','Do items', [ FA('text','Text', RICH_HINT, 2) ], 5, 'Item'),
+      F('dontHead','Right heading'), FL('donts','Don’t items', [ FA('text','Text', RICH_HINT, 2) ], 5, 'Item') ],
+    defaults:{ title:'Ground [[rules]]', doHead:'Do', dos:[ {text:'Keep one idea per slide'}, {text:'Put the detail in your notes'} ], dontHead:'Don’t', donts:[ {text:'Read the slide aloud'}, {text:'Paste in a wall of text'} ] },
+    render(c, ey) {
+      const col = (head, items, good, d) => {
+        const rgb = good ? 'var(--acc-rgb)' : 'var(--acc2-rgb)', color = good ? 'var(--acc)' : 'var(--acc2)', mark = good ? '✓' : '✕';
+        return `<div style="background:rgba(${rgb},${good?'.07':'.08'});border:1px solid rgba(${rgb},${good?'.3':'.35'});border-radius:28px;padding:48px 52px;${an('rise',.9,d)}">
+          <div style="display:flex;align-items:center;gap:22px">
+            <div class="fp" style="width:60px;height:60px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:32px;color:var(--deep);background:${color}">${mark}</div>
+            <div class="fp" style="font-weight:800;font-size:46px;color:${color}">${rich(head)}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:26px;margin-top:38px">${(items || []).map((it, i) => `
+            <div style="display:flex;gap:22px;align-items:flex-start;${an('rise',.7,d+.2+i*.1)}">
+              <div class="fp" style="flex:none;font-weight:700;font-size:30px;color:${color};opacity:.8;margin-top:4px">${mark}</div>
+              <div style="font-size:36px;line-height:1.35;color:rgba(var(--ink-rgb),.9);text-wrap:pretty">${rich(it.text)}</div>
+            </div>`).join('')}</div>
+        </div>`;
+      };
+      const inner = `<div class="fp" style="font-weight:800;font-size:104px;letter-spacing:-.025em;${an('rise',.8)}">${rich(c.title)}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:50px;margin-top:66px;align-items:start">${col(c.doHead, c.dos, true, .2)}${col(c.dontHead, c.donts, false, .35)}</div>`;
+      return ey ? eyebrowWrap(ey, inner) : `<div style="position:absolute;inset:0;padding:0 150px;display:flex;flex-direction:column;justify-content:center">${inner}</div>`;
+    }
   }
 };
 
@@ -718,7 +944,14 @@ function renderStage(slide, deck, extraClass, opts) {
   if (slide.cue && o.cue !== false) {
     cueHtml = `<div style="position:absolute;right:64px;bottom:${o.cueLift ? 114 : 44}px;max-width:560px;text-align:right;font-size:21px;font-style:italic;line-height:1.45;letter-spacing:.02em;color:rgba(var(--ink-rgb),.38);z-index:10;${an('fade',1.2,.9)}"><span style="font-style:normal;color:rgba(var(--acc-rgb),.5)">✎ </span>${rich(slide.cue)}</div>`;
   }
-  return `<div class="stage ${extraClass||''}">${lay.render(slide.content || {}, eyebrow)}${cueHtml}</div>`;
+  /* deck-level organization mark (company name / disclaimer): left edge, above or below all layout content */
+  let orgHtml = '';
+  const org = deck.meta && deck.meta.org;
+  if (org && !slide.hideOrg && o.org !== false) {
+    const pos = (deck.settings && deck.settings.orgPos) === 'top' ? 'top:44px' : `bottom:${o.orgLift ? 114 : 44}px`;
+    orgHtml = `<div class="fp orgmark" style="position:absolute;left:150px;${pos};max-width:1100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600;font-size:20px;line-height:1.4;letter-spacing:.18em;text-transform:uppercase;color:rgba(var(--ink-rgb),.4);z-index:10">${rich(org)}</div>`;
+  }
+  return `<div class="stage ${extraClass||''}">${lay.render(slide.content || {}, eyebrow)}${orgHtml}${cueHtml}</div>`;
 }
 
 function slideTitle(s) {
@@ -727,15 +960,15 @@ function slideTitle(s) {
 
 /* ---------------- deck model ---------------- */
 function newSlide(layout) {
-  return { id: uid(), layout, parentId: null, label:'', notes:'', cue:'', duration:'', hidden:false,
+  return { id: uid(), layout, parentId: null, label:'', notes:'', cue:'', duration:'', hidden:false, hideOrg:false,
     content: JSON.parse(JSON.stringify(LAYOUTS[layout].defaults)) };
 }
 function newDeck(title) {
   return {
     id: uid(), version: 1,
-    meta: { title: title || 'Untitled Deck', created: Date.now() },
+    meta: { title: title || 'Untitled Deck', created: Date.now(), org: '' },
     theme: 'emerald',
-    settings: { nav:'dots', showSkip:true, showCounter:false, transition:'fade', ambient:true, autoHideChrome:true, autoPlay:false, autoSeconds:8, autoLoop:false, targetMinutes:'' },
+    settings: { nav:'dots', showSkip:true, showCounter:false, transition:'fade', ambient:true, autoHideChrome:true, autoPlay:false, autoSeconds:8, autoLoop:false, targetMinutes:'', orgPos:'bottom' },
     slides: [ newSlide('hero'), newSlide('section'), newSlide('topics'), newSlide('closing') ]
   };
 }
@@ -745,16 +978,18 @@ function validateDeck(d) {
   if (!d.slides.length) throw new Error('Deck has no slides.');
   d.version = d.version || 1;
   d.id = d.id || uid();
-  d.meta = Object.assign({ title:'Untitled Deck', created: Date.now() }, d.meta);
+  d.meta = Object.assign({ title:'Untitled Deck', created: Date.now(), org: '' }, d.meta);
+  if (typeof d.meta.org !== 'string') d.meta.org = '';
   d.theme = (THEMES[d.theme] || d.theme === 'custom') ? d.theme : 'emerald';
   if (d.theme === 'custom') d.customTheme = Object.assign({}, DEFAULT_CUSTOM, d.customTheme || {});
-  d.settings = Object.assign({ nav:'dots', showSkip:true, showCounter:false, transition:'fade', ambient:true, autoHideChrome:true, autoPlay:false, autoSeconds:8, autoLoop:false, targetMinutes:'' }, d.settings);
+  d.settings = Object.assign({ nav:'dots', showSkip:true, showCounter:false, transition:'fade', ambient:true, autoHideChrome:true, autoPlay:false, autoSeconds:8, autoLoop:false, targetMinutes:'', orgPos:'bottom' }, d.settings);
+  if (d.settings.orgPos !== 'top') d.settings.orgPos = 'bottom';
   d.slides.forEach((s, i) => {
     if (!LAYOUTS[s.layout]) throw new Error(`Slide ${i+1}: unknown layout "${s.layout}".`);
     s.id = s.id || uid();
     s.content = Object.assign(JSON.parse(JSON.stringify(LAYOUTS[s.layout].defaults)), s.content || {});
     s.parentId = s.parentId || null;
-    s.label = s.label || ''; s.notes = s.notes || ''; s.cue = s.cue || ''; s.duration = s.duration || ''; s.hidden = !!s.hidden;
+    s.label = s.label || ''; s.notes = s.notes || ''; s.cue = s.cue || ''; s.duration = s.duration || ''; s.hidden = !!s.hidden; s.hideOrg = !!s.hideOrg;
   });
   return d;
 }
@@ -845,6 +1080,9 @@ function touch() {
 function updateSaveDot() {
   const el = $('#savedot');
   if (el) el.textContent = saveState === 'saved' ? 'Saved' : saveState === 'saving' ? 'Saving…' : 'Save failed';
+  const u = $('#undobtn'), r = $('#redobtn');
+  if (u) u.disabled = !undoStack.length;
+  if (r) r.disabled = !redoStack.length;
 }
 
 /* ---------------- designer ---------------- */
@@ -860,20 +1098,27 @@ function renderDesign() {
   <div class="studio">
     <div class="topbar">
       <div class="brand">Green<span>room</span><em class="ver">v${APP_VERSION}</em></div>
+      <button class="btn" data-act="decks" title="Your saved decks in this browser">Decks</button>
       <input class="deck-title" id="titlein" value="${esc(deck.meta.title)}" title="Deck title">
-      <button class="btn" data-act="decks">Decks</button>
-      <button class="btn" data-act="aiprompt" title="Copy a prompt that teaches your AI of choice to draft a deck JSON from your outline">✨ AI Prompt</button>
-      <button class="btn" data-act="import">Import JSON</button>
-      <button class="btn" data-act="export">Export JSON</button>
-      <button class="btn" data-act="playerexport" title="Export a standalone HTML that opens straight into this presentation — no designer, nothing to import">Publish Player</button>
-      <button class="btn" data-act="json">JSON</button>
-      <button class="btn" data-act="guide">Guide</button>
-      <div class="tb-spacer"></div>
-      <button class="btn" data-act="undo" title="Undo (Ctrl+Z)">↶</button>
-      <button class="btn" data-act="redo" title="Redo (Ctrl+Y)">↷</button>
+      <button class="btn" data-act="undo" id="undobtn" title="Undo (Ctrl+Z)">↶</button>
+      <button class="btn" data-act="redo" id="redobtn" title="Redo (Ctrl+Y)">↷</button>
       <div class="save-dot" id="savedot">Saved</div>
-      <button class="btn" data-act="print">Print / PDF</button>
+      <div class="tb-sep"></div>
+      <button class="btn" data-act="aiprompt" title="Copy a prompt that teaches your AI of choice to draft a deck JSON from your outline">✨ AI Prompt</button>
+      <div class="tbmenu">
+        <button class="btn" data-menu="json" title="Import, export, or edit the deck as JSON">JSON<span class="caret">▾</span></button>
+        <div class="tbmenu-pop">
+          <button data-act="import">Import JSON…<small>from a file</small></button>
+          <button data-act="export">Export JSON<small>download</small></button>
+          <button data-act="json">View / edit JSON<small>in place</small></button>
+        </div>
+      </div>
+      <div class="tb-spacer"></div>
+      <button class="btn" data-act="playerexport" title="Export a standalone HTML that opens straight into this presentation — no designer, nothing to import">Publish Player</button>
+      <button class="btn" data-act="print" title="Lay out every slide for the browser’s print dialog">Print / PDF</button>
       <button class="btn primary" data-act="present">▶ Present</button>
+      <div class="tb-sep"></div>
+      <button class="btn round" data-act="guide" title="Guide">?</button>
     </div>
     <div class="main">
       <div class="slidelist" id="slidelist"></div>
@@ -976,7 +1221,9 @@ function renderProps() {
     <div class="field"><label>Autoplay duration (seconds, optional)</label><input type="number" class="in" id="f-duration" min="1" max="600" value="${esc(s.duration)}" placeholder="deck default">
       <div class="hint">Only used in autoplay mode — overrides the deck’s seconds-per-slide for this slide.</div></div>
     <div class="field"><label class="checkrow"><input type="checkbox" id="f-hidden" ${s.hidden?'checked':''}> Hide in presentation (backup slide)</label>
-      <div class="hint">Stays in the deck and designer, but navigation, autoplay, and Print/PDF skip it — perfect for appendix slides you only show if asked.</div></div>`;
+      <div class="hint">Stays in the deck and designer, but navigation, autoplay, and Print/PDF skip it — perfect for appendix slides you only show if asked.</div></div>
+    <div class="field"><label class="checkrow"><input type="checkbox" id="f-hideorg" ${s.hideOrg?'checked':''}> Hide organization mark on this slide</label>
+      <div class="hint">For title and closing slides that already carry the organization name. The mark itself is set in the Deck tab.</div></div>`;
   body.innerHTML = html;
   bindSlideProps(body, s);
 }
@@ -1038,6 +1285,7 @@ function bindSlideProps(body, s) {
   $('#f-cue', body).addEventListener('input', e => { s.cue = e.target.value; touch(); previewSoon(); });
   $('#f-duration', body).addEventListener('input', e => { s.duration = e.target.value; touch(); });
   $('#f-hidden', body).addEventListener('change', e => { s.hidden = e.target.checked; touch(); renderSlideList(); });
+  $('#f-hideorg', body).addEventListener('change', e => { s.hideOrg = e.target.checked; touch(); previewSoon(); });
 
   $$('[data-k]', body).forEach(el => {
     const f = LAYOUTS[s.layout].fields.find(x => x.k === el.dataset.k);
@@ -1108,6 +1356,11 @@ function deckSettingsHTML() {
       ${[['bg','Background'],['glow','Background glow'],['ink','Text'],['acc','Accent 1 (gold role)'],['acc2','Accent 2 (orange role)']].map(([k, lbl]) =>
         `<div class="colorrow"><span>${lbl}</span><input type="color" data-ctcolor="${k}" value="${esc((deck.customTheme||DEFAULT_CUSTOM)[k])}"></div>`).join('')}
       <div class="hint">A full theme — gradients, cards, chrome, particles — is derived from these five colors.</div></div>` : ''}
+    <div class="field"><label>Organization mark</label><input type="text" id="d-org" value="${esc(deck.meta.org || '')}" placeholder="e.g. Acme Corp · Confidential" maxlength="120">
+      <div class="hint">A company name, disclaimer, or copyright line shown small and faint on the left of every slide. Leave empty for none. Text markup works here.</div></div>
+    <div class="field"><label>Organization mark position</label>
+      <select id="d-orgpos"><option value="bottom" ${st.orgPos!=='top'?'selected':''}>Bottom-left (below content)</option><option value="top" ${st.orgPos==='top'?'selected':''}>Top-left (above content)</option></select>
+      <div class="hint">Hide it on individual slides — a title slide that already names you, say — with the checkbox in the Slide tab.</div></div>
     <div class="field"><label>Navigation style</label>
       <select id="d-nav"><option value="dots" ${st.nav==='dots'?'selected':''}>Dot pills (bottom)</option><option value="thumbs" ${st.nav==='thumbs'?'selected':''}>Thumbnail rail (left)</option></select>
       <div class="hint">Press T while presenting to toggle the rail on the fly.</div></div>
@@ -1138,6 +1391,8 @@ function bindDeckSettings(body) {
     deck.customTheme[el.dataset.ctcolor] = el.value;
     touch(); previewSoon();
   }));
+  $('#d-org', body).addEventListener('input', e => { deck.meta.org = e.target.value; touch(); previewSoon(); });
+  $('#d-orgpos', body).addEventListener('change', e => { st.orgPos = e.target.value; touch(); previewSoon(); });
   $('#d-nav', body).addEventListener('change', e => { st.nav = e.target.value; touch(); });
   $('#d-tr', body).addEventListener('change', e => { st.transition = e.target.value; touch(); });
   [['#d-skip','showSkip'],['#d-counter','showCounter'],['#d-amb','ambient'],['#d-hide','autoHideChrome'],['#d-auto','autoPlay'],['#d-autoloop','autoLoop']].forEach(([selr, k]) => {
@@ -1408,12 +1663,13 @@ const GUIDE_TABS = {
         <p>Already have notes, bullets, or an old PowerPoint? A ready-made prompt turns them into a Greenroom deck you can import and polish.</p>
         <span class="glink" data-gtab="ai">How that works →</span></div>
     </div>
-    <p>That’s genuinely all you need to start. The other tabs above go deeper whenever you’re ready — and this guide is always one click away under <b>Guide</b>.</p>` },
+    <p>That’s genuinely all you need to start. The other tabs above go deeper whenever you’re ready — and this guide is always one click away under the <b>?</b> button at the top right.</p>` },
 
   build: { name:'Build', html: () => `
     <h4>Building slides</h4>
     <ul>
       <li><b>+ Add slide</b> opens a visual picker — each card is a live preview of that layout. Slides land after the selected one.</li>
+      <li><b>21 layouts</b> cover titles, sections, lists, and comparisons, plus data (<b>Big Stats</b>, <b>Data Bars</b>, <b>Progress Ring</b>), <b>Quote</b>, <b>Process Flow</b>, <b>Before / After</b>, <b>Code Window</b>, <b>People Grid</b>, and <b>Do / Don’t</b> — all pure text, no images required.</li>
       <li>Reorder by <b>dragging</b> in the left list (or the ▴▾ arrows on hover); hover also reveals <b>duplicate</b> and <b>delete</b>.</li>
       <li>Picked the wrong look? Use <b>Layout → Change…</b> in the right panel: it previews <i>your slide’s own content</i> in every layout before you commit.</li>
       <li><b>Group into sections:</b> add a <b>Section Splash</b>, then set <b>Parent section</b> on its detail slides — they inherit the section name as an eyebrow label and nest in the thumbnail rail.</li>
@@ -1421,6 +1677,7 @@ const GUIDE_TABS = {
       <li><b>Undo / redo</b> with <code>Ctrl+Z</code> / <code>Ctrl+Y</code> (or the ↶ ↷ buttons) — experiment freely.</li>
       <li><b>Backup slides:</b> tick “Hide in presentation” on any slide to keep it in the deck but skip it during the show and in Print/PDF — ideal for appendix material.</li>
       <li><b>Your own colors:</b> pick “Custom colors…” as the theme in the Deck tab — five swatches derive a complete theme, saved inside the deck.</li>
+      <li><b>Organization mark:</b> in the Deck tab, enter a company name, disclaimer, or copyright line and it appears small and faint on the left of <i>every</i> slide — above all content or below it, your choice. Tick “Hide organization mark” on slides that already carry your name, like the title slide.</li>
       <li><b>⊞ Sorter</b> (under the preview) shows the whole deck as a drag-to-reorder grid; <code>Ctrl+F</code> finds text anywhere in the deck. A ⚠ badge warns when a slide’s content overflows the stage.</li>
     </ul>
     <p><b>Text markup</b> works in any content field:</p>
@@ -1442,7 +1699,7 @@ const GUIDE_TABS = {
       <li><code>G</code> opens a <b>slide grid</b> to jump anywhere visually; typing a <b>number + Enter</b> jumps directly; <code>B</code> blacks out the screen so eyes return to you.</li>
       <li><b>Rehearse with</b> <code>R</code>: it records how long you spend on each slide and shows a recap when you press it again. Set a target length in the Deck tab and the HUD timer warns as you approach it.</li>
       <li><b>Autoplay (kiosk mode)</b> in the Deck tab makes the deck run itself — set seconds per slide (or override per slide), optionally looping. <code>A</code> pauses/resumes it live.</li>
-      <li>The <b>Deck tab</b> (right panel) sets the theme — four looks, from deep emerald to light ivory — plus transition, dot-vs-rail navigation, slide counter, Skip-to-end button, and ambient background.</li>
+      <li>The <b>Deck tab</b> (right panel) sets the theme — four looks, from deep emerald to light ivory — plus transition, dot-vs-rail navigation, slide counter, Skip-to-end button, ambient background, and an organization mark shown on every slide.</li>
       <li><b>Presenting elsewhere:</b> copy this HTML file to the machine, open it in a browser, <b>Import</b> your deck’s JSON, present. A refresh won’t lose anything — the deck is saved in that browser too.</li>
     </ul>` },
 
@@ -1452,7 +1709,7 @@ const GUIDE_TABS = {
     <p><b>From notes, bullets, or an outline:</b></p>
     <ul>
       <li>Copy the AI Prompt, paste it into your AI, and add your outline where it says <i>“paste your outline below”</i>.</li>
-      <li>Save its JSON reply as a <code>.json</code> file, then <b>Import JSON</b> here and polish.</li>
+      <li>Save its JSON reply as a <code>.json</code> file, then <b>JSON ▾ → Import JSON</b> here and polish.</li>
     </ul>
     <p><b>From an existing deck (.pptx, PDF, doc):</b></p>
     <ul>
@@ -1465,12 +1722,13 @@ const GUIDE_TABS = {
     <h4>Save, share, print</h4>
     <ul>
       <li><b>Decks</b> is your library in this browser — open, create, or delete saved decks.</li>
-      <li><b>Export JSON</b> is your backup and your hand-off format; <b>Import JSON</b> loads one as a new deck.</li>
+      <li>The <b>JSON ▾</b> menu holds the data tools: <b>Export JSON</b> is your backup and your hand-off format, <b>Import JSON</b> loads one as a new deck, and <b>View / edit JSON</b> lets you tweak the raw deck in place.</li>
       <li><b>Publish Player</b> exports a standalone HTML that <i>is</i> the presentation: send it to anyone, they double-click it, and it opens straight into the show — no designer, nothing to import.</li>
       <li><b>Snapshots</b> (in the Decks dialog) are named restore points that survive reloads — take one before a big reorganization.</li>
       <li><b>Importing</b> a JSON now offers “append to current deck” — reuse a section from an old deck without leaving this one.</li>
       <li>The print view has a <b>Handout</b> mode: every slide with its speaker notes and cues beneath it — a rehearsal script or leave-behind.</li>
-      <li><b>Print / PDF</b> lays out every slide for the browser’s print dialog (Landscape, margins None, Background graphics on). Presenter cues are left out of it.</li>
+      <li><b>Plain</b> mode is the ink-friendly one: black-on-white slides, three per portrait page, each with ruled lines beside it for handwritten notes — the classic audience handout.</li>
+      <li><b>Print / PDF</b> lays out every slide for the browser’s print dialog (Landscape, margins None, Background graphics on). Presenter cues are left out of it; the organization mark stays in.</li>
     </ul>` }
 };
 
@@ -1513,11 +1771,11 @@ function buildHelperPrompt() {
   const themeNames = Object.keys(THEMES).map(t => JSON.stringify(t)).join(' | ');
   const example = {
     version: 1,
-    meta: { title: 'Quarterly Kickoff' },
+    meta: { title: 'Quarterly Kickoff', org: 'Acme Corp · Internal' },
     theme: 'emerald',
     settings: { nav: 'dots', showSkip: true, showCounter: true, transition: 'fade', ambient: true, autoHideChrome: true },
     slides: [
-      { id: 's1', layout: 'hero', parentId: null, label: 'Intro', notes: 'Welcome everyone, wait for the room to fill.',
+      { id: 's1', layout: 'hero', parentId: null, label: 'Intro', notes: 'Welcome everyone, wait for the room to fill.', hideOrg: true,
         content: { kicker: 'Team All-Hands', title: 'Quarterly\n[[Kickoff]]', badge: 'Questions welcome at any time' } },
       { id: 's2', layout: 'topics', parentId: null, label: 'Agenda', notes: '',
         content: { title: 'Today’s [[Agenda]]', items: [ { title: 'Where we landed', sub: 'Q2 results' }, { title: 'Where we’re going', sub: 'Q3 plan' } ] } },
@@ -1525,7 +1783,9 @@ function buildHelperPrompt() {
         content: { kicker: 'Part One', title: 'Q2 [[Results]]', subtitle: 'The numbers and the story behind them', ghost: '01' } },
       { id: 's4', layout: 'statement', parentId: 's3', label: 'Headline result', notes: 'Pause here. Let it land.', cue: 'Tell the Meridian win story',
         content: { title: 'The headline', body: 'Revenue grew [[18%]] quarter over quarter.', punch: 'Our best quarter yet.' } },
-      { id: 's5', layout: 'closing', parentId: null, label: 'Thanks', notes: '',
+      { id: 's5', layout: 'bars', parentId: 's3', label: 'Growth by segment', notes: 'Enterprise carried the quarter.',
+        content: { title: 'Where the [[growth]] came from', items: [ { label: 'Enterprise', value: '62', display: '62%', tone: 'gold' }, { label: 'Self-serve', value: '38', display: '38%', tone: 'orange' } ] } },
+      { id: 's6', layout: 'closing', parentId: null, label: 'Thanks', notes: '',
         content: { title: 'Thank you!', kicker: 'Up Next', tease: 'Q3 Planning Week', badge: 'Slides and recording will be shared after' } }
     ]
   };
@@ -1539,7 +1799,7 @@ OUTPUT RULES
 DECK STRUCTURE
 {
   "version": 1,
-  "meta": { "title": "<deck title>" },
+  "meta": { "title": "<deck title>", "org": "<organization mark or ''>" },
   "theme": ${themeNames} | "custom",
   "customTheme": { "bg":"#0B2318", "glow":"#17402C", "ink":"#F4F1E9", "acc":"#E3C567", "acc2":"#DE6B2C" }   (hex colors; ONLY when theme is "custom" — e.g. to match my brand colors if my outline mentions them),
   "settings": {
@@ -1551,10 +1811,13 @@ DECK STRUCTURE
     "autoHideChrome": true|false    (navigation fades out when idle),
     "autoPlay": true|false          (kiosk mode: slides advance automatically),
     "autoSeconds": 8                (autoplay: seconds per slide),
-    "autoLoop": true|false          (autoplay: loop back to the first slide)
+    "autoLoop": true|false,         (autoplay: loop back to the first slide)
+    "orgPos": "bottom" | "top"      (where the organization mark sits: bottom-left below all content, or top-left above it)
   },
   "slides": [ <slide objects in presentation order> ]
 }
+
+- "meta.org": optional organization mark — a short company name, disclaimer, or copyright line (max ~50 characters, e.g. "Acme Corp · Confidential") rendered small and faint on the left edge of every slide. Fill it in when my outline names the organization or asks for a footer/disclaimer; otherwise use "".
 
 SLIDE OBJECT
 { "id": "s1", "layout": "<layout name>", "parentId": null, "label": "<short name>", "notes": "<speaker notes>", "cue": "<tiny on-slide reminder or ''>", "content": { <layout-specific fields> } }
@@ -1563,6 +1826,7 @@ SLIDE OBJECT
 - "notes": private speaker notes, shown only to the presenter on demand. Put my supporting detail and talking points here instead of crowding the slide.
 - "duration": optional number — in autoplay mode, how many seconds this slide stays (omit to use settings.autoSeconds).
 - "hidden": optional true — a backup/appendix slide: kept in the deck but skipped during the presentation and in print. Use for detail slides only shown if asked.
+- "hideOrg": optional true — suppress the deck's organization mark on this slide. Set it on the hero/title and closing slides when they already state the organization name.
 - "cue": optional presenter nudge (max ~8 words, e.g. "Tell the onboarding anecdote"), rendered small and faint at the slide's bottom-right the whole time the slide is up. Unlike "notes" it stays on screen, so keep it terse and non-sensitive. Use "" when not needed. If my outline mentions an aside, story, demo, or "remember to...", that belongs in "cue".
 
 TEXT MARKUP (works in any content text field)
@@ -1577,7 +1841,10 @@ ${layoutDocs}
 DESIGN GUIDANCE
 - Slides are static (no click-to-reveal), so keep each slide to ONE idea. Headlines short and punchy; body text 1-3 sentences maximum. Move detail into "notes".
 - Typical flow: hero (title slide) -> topics (agenda) -> a "section" splash per major segment (ghost "01", "02", ... and kicker "Part One", "Part Two", ...) with that segment's detail slides as its children via parentId -> closing.
-- Vary layouts across the deck. Use "statement" for one big message, "callout" right before a demo or discussion, "compare" for 2-3 side-by-side ideas, "bullets" only when a list is genuinely needed (max ~5 bullets).
+- Vary layouts across the deck. Use "statement" for one big message, "callout" right before a demo or discussion, "compare" for 2-3 side-by-side ideas, "beforeafter" for a then-vs-now transformation, "dodont" for rules or guidelines, and "bullets" only when a list is genuinely needed (max ~5 bullets).
+- Numbers: "stats" for 2-4 headline figures, "bars" when several values should be compared visually (give "value" as a plain number and put the units in "display"), "ring" for a single percentage.
+- People and process: "people" for team intros or owners (name + role, no photos needed), "process" for how-something-works steps, "timeline" for dated milestones with status.
+- "quote" for a testimonial or a memorable line, with who said it. "code" for a short code or terminal snippet (max ~14 lines, keep lines under ~60 characters; wrap a key token in [[ ]] to highlight it).
 - If my outline references a screenshot, chart, or picture, use the "image" layout with "src": "" - I will attach the actual image inside the app.
 - If my outline is thin in places, make reasonable choices and keep going; I will refine everything in the app afterwards.
 
@@ -1597,7 +1864,7 @@ function aiPromptModal() {
       <ol style="margin:8px 0 0 20px;display:flex;flex-direction:column;gap:4px">
         <li><b style="color:#F2DD9B">Copy</b> the helper prompt below.</li>
         <li><b style="color:#F2DD9B">Paste</b> it into your AI of choice (Copilot, Claude, ChatGPT…) and add your outline at the end.</li>
-        <li><b style="color:#F2DD9B">Save</b> the JSON it replies with to a file, then use <b style="color:#F2DD9B">Import JSON</b> here and customize away.</li>
+        <li><b style="color:#F2DD9B">Save</b> the JSON it replies with to a file, then use <b style="color:#F2DD9B">JSON ▾ → Import JSON</b> here and customize away.</li>
       </ol>
     </div>
     <textarea class="jsonarea" id="aiprompttext" readonly spellcheck="false" style="height:34vh">${esc(prompt)}</textarea>
@@ -1863,7 +2130,7 @@ function renderPresent() {
     <div id="laser" style="display:none"></div>
   </div>`;
   initInk();
-  $('#curlayer').innerHTML = renderStage(deck.slides[cur], deck, '', { cueLift: deck.settings.showSkip });
+  $('#curlayer').innerHTML = renderStage(deck.slides[cur], deck, '', { cueLift: deck.settings.showSkip, orgLift: deck.settings.showCounter });
   hudStart = Date.now();
   autoRun = !!deck.settings.autoPlay;
   fitStage();
@@ -2032,7 +2299,7 @@ function goTo(n) {
   const tr = deck.settings.transition;
   const nl = document.createElement('div');
   nl.className = 'layer'; nl.id = 'curlayer';
-  nl.innerHTML = renderStage(deck.slides[cur], deck, '', { cueLift: deck.settings.showSkip });
+  nl.innerHTML = renderStage(deck.slides[cur], deck, '', { cueLift: deck.settings.showSkip, orgLift: deck.settings.showCounter });
   if (old) old.removeAttribute('id');
   if (tr === 'none') {
     if (old) old.remove();
@@ -2065,32 +2332,46 @@ function wakeChrome() {
 }
 
 /* ---------------- print view ---------------- */
-let printHandout = false;
+let printMode = 'slides';   /* 'slides' | 'handout' | 'plain' */
+/* theme variables for plain printing: every layout draws only through these, so swapping them yields black-on-white */
+const PRINT_PLAIN_VARS = '--ink:#222;--ink-rgb:34,34,34;--acc:#000;--acc-rgb:0,0,0;--accB:#333;--acc2:#555;--acc2-rgb:85,85,85;--acc2Soft:#777;--deep:#fff;--card-rgb:0,0,0;--chromebg:#fff;--railbg:#fff;--panelbg:#fff';
+const PLAIN_PER_PAGE = 3, PLAIN_LINES = 10;
 function renderPrint() {
   const t = theme(deck);
   const slides = deck.slides.filter(s => !s.hidden);
-  const stage = s => `<div class="ppage"><div class="pstage" style="width:1920px;height:1080px;background:${t.bg};${themeVarStyle(t)}">${renderStage(s, deck, 'static', { cue:false })}</div></div>`;
-  const pages = printHandout
-    ? slides.map((s, i) => `
+  const plain = printMode === 'plain', handout = printMode === 'handout';
+  const stage = s => `<div class="ppage"><div class="pstage" style="width:1920px;height:1080px;background:${plain ? '#fff' : t.bg};${plain ? PRINT_PLAIN_VARS : themeVarStyle(t)}">${renderStage(s, deck, 'static', { cue:false })}</div></div>`;
+  let pages;
+  if (handout) {
+    pages = slides.map((s, i) => `
       <div class="hpage">${stage(s)}
         <div class="hnotes">
           <div class="hn-title">${i+1} · ${esc(slideTitle(s))}</div>
           ${s.cue ? `<div class="hn-cue">✎ ${esc(s.cue)}</div>` : ''}
           <div class="hn-body">${esc(s.notes) || '<span style="opacity:.45">—</span>'}</div>
-        </div></div>`).join('')
-    : slides.map(s => stage(s)).join('');
+        </div></div>`).join('');
+  } else if (plain) {
+    const rows = slides.map((s, i) => `<div class="plainrow">${stage(s)}<div class="plainnotes"><div class="pn-title">${i+1} · ${esc(slideTitle(s))}</div>${'<div class="pn-line"></div>'.repeat(PLAIN_LINES)}</div></div>`);
+    pages = '';
+    for (let i = 0; i < rows.length; i += PLAIN_PER_PAGE) pages += `<div class="plainpage">${rows.slice(i, i + PLAIN_PER_PAGE).join('')}</div>`;
+  } else {
+    pages = slides.map(s => stage(s)).join('');
+  }
+  const tip = plain ? 'choose Portrait and margins None. Background graphics are optional here.'
+    : `choose ${handout ? 'Portrait' : 'Landscape'}, margins None, and enable Background graphics.`;
   $('#app').innerHTML = `
   <div id="printview">
     <div class="printbar">
       <button class="btn" data-act="backdesign">← Back to designer</button>
-      <button class="btn ${printHandout?'':'primary'}" data-act="pm-slides">Slides</button>
-      <button class="btn ${printHandout?'primary':''}" data-act="pm-handout">Handout (with notes)</button>
+      <button class="btn ${printMode==='slides'?'primary':''}" data-act="pm-slides">Slides</button>
+      <button class="btn ${handout?'primary':''}" data-act="pm-handout">Handout (with notes)</button>
+      <button class="btn ${plain?'primary':''}" data-act="pm-plain" title="Black-on-white slides, three per page, with ruled lines beside each for handwritten notes">Plain (B&amp;W + note lines)</button>
       <button class="btn primary" onclick="window.print()">Print / Save as PDF</button>
-      <span class="note">Tip: choose ${printHandout ? 'Portrait' : 'Landscape'}, margins None, and enable Background graphics.</span>
+      <span class="note">Tip: ${tip}</span>
     </div>
     <div id="pages">${pages}</div>
   </div>
-  <style>@media print { @page { size:${printHandout ? '8.5in 11in' : '11in 6.19in'}; margin:${printHandout ? '.5in' : '0'}; } }</style>`;
+  <style>@media print { @page { size:${printMode === 'slides' ? '11in 6.19in' : '8.5in 11in'}; margin:${printMode === 'slides' ? '0' : '.5in'}; } }</style>`;
   const fit = () => $$('.ppage').forEach(pg => {
     const st = $('.pstage', pg);
     st.style.transform = `scale(${pg.getBoundingClientRect().width / 1920})`;
@@ -2123,8 +2404,11 @@ window.addEventListener('hashchange', () => {
 
 /* ---------------- global events ---------------- */
 document.addEventListener('click', e => {
+  const mt = e.target.closest('[data-menu]');
+  $$('.tbmenu.open').forEach(m => { if (!mt || !m.contains(mt)) m.classList.remove('open'); });
+  if (mt) { mt.closest('.tbmenu').classList.toggle('open'); return; }
   const el = e.target.closest('[data-act]');
-  if (el) {
+  if (el && !el.closest(".sl-item")) {
     const a = el.dataset.act;
     if (a === 'present') switchMode('present');
     else if (a === 'print') switchMode('print');
@@ -2136,8 +2420,9 @@ document.addEventListener('click', e => {
     else if (a === 'undo') doUndo();
     else if (a === 'redo') doRedo();
     else if (a === 'sorter') sorterModal();
-    else if (a === 'pm-slides') { printHandout = false; renderPrint(); }
-    else if (a === 'pm-handout') { printHandout = true; renderPrint(); }
+    else if (a === 'pm-slides') { printMode = 'slides'; renderPrint(); }
+    else if (a === 'pm-handout') { printMode = 'handout'; renderPrint(); }
+    else if (a === 'pm-plain') { printMode = 'plain'; renderPrint(); }
     else if (a === 'decks') decksModal();
     else if (a === 'import') importJSON();
     else if (a === 'export') exportJSON();
@@ -2189,6 +2474,7 @@ document.addEventListener('mousedown', () => { if (mode === 'present') wakeChrom
 document.addEventListener('keydown', e => {
   if (mode !== 'present') {
     if (mode === 'print' && e.key === 'Escape') switchMode('design');
+    if (mode === 'design' && e.key === 'Escape') $$('.tbmenu.open').forEach(m => m.classList.remove('open'));
     if (mode === 'design' && (e.ctrlKey || e.metaKey)) {
       const key = e.key.toLowerCase();
       if (key === 'z' && !e.shiftKey) { e.preventDefault(); doUndo(); }
@@ -2238,7 +2524,7 @@ function sampleDeck() {
   const sec2 = S('section', { kicker:'Part Two', title:'Customer\n[[Feedback]]', subtitle:'What we heard this quarter', ghost:'02' }, { label:'Feedback splash' });
   const sec3 = S('section', { kicker:'Part Three', title:'The Q4 [[Roadmap]]', subtitle:'', ghost:'03' }, { label:'Roadmap splash' });
   const slides = [
-    S('hero', { kicker:'Company All-Hands', title:'Q3 Business\n[[Review & Roadmap]]', badge:'Questions welcome in the meeting chat at any time.' }, { label:'Intro' }),
+    S('hero', { kicker:'Company All-Hands', title:'Q3 Business\n[[Review & Roadmap]]', badge:'Questions welcome in the meeting chat at any time.' }, { label:'Intro', hideOrg:true }),
     S('topics', { title:'Today’s Topics', items:[
       { title:'Where the numbers landed', sub:'Q3 results at a glance' },
       { title:'What customers told us', sub:'' },
@@ -2253,6 +2539,11 @@ function sampleDeck() {
     S('compare', { title:'What drove the [[quarter]]', style:'columns', items:[
       { text:'New enterprise accounts closed faster than in any prior quarter', tone:'gold' },
       { text:'Churn fell to its lowest level in two years', tone:'orange' } ] }, { label:'What drove it', parentId: sec1.id }),
+    S('bars', { title:'Growth by [[segment]]', items:[
+      { label:'Enterprise', value:'62', display:'62%', tone:'gold' },
+      { label:'Mid-market', value:'27', display:'27%', tone:'gold' },
+      { label:'Self-serve', value:'11', display:'11%', tone:'orange' } ] }, { label:'Growth by segment', parentId: sec1.id }),
+    S('ring', { value:'72', display:'', title:'of accounts renewed [[early]]', body:'Up from 41% this time last year.', tone:'gold' }, { label:'Early renewals', parentId: sec1.id }),
     S('callout', { badge:'Live Demo', title:'Let’s See It\n[[in Action]]' }, { label:'Live demo', parentId: sec1.id }),
     sec2,
     S('bullets', { title:'What we [[heard]]', items:[
@@ -2260,11 +2551,21 @@ function sampleDeck() {
       { text:'The new documentation is a clear win' },
       { text:'Mobile still lags the desktop experience' },
       { text:'Pricing tiers are {{confusing}} — our most-repeated theme' } ] }, { label:'What we heard', parentId: sec2.id }),
+    S('quote', { quote:'We stopped dreading onboarding week. It just [[happens]] now.', name:'Priya Natarajan', role:'Head of Operations, Northwind' }, { label:'In their words', parentId: sec2.id }),
     sec3,
     S('statement', { title:'', body:'Ship fewer things — [[finish]] more of them.\nQ4 is built around three themes, not a feature list.', punch:'' }, { label:'Roadmap philosophy', parentId: sec3.id }),
     S('compare', { title:'How to read the roadmap', style:'cards', items:[
       { kicker:'The plan', text:'says [[what we will build]]', tone:'gold' },
       { kicker:'The bet', text:'says {{why it will matter}}', tone:'orange' } ] }, { label:'How to read it', parentId: sec3.id }),
+    S('process', { title:'How a theme becomes [[shipped]]', items:[
+      { title:'Pitch', sub:'One page, one owner' },
+      { title:'Shape', sub:'Two weeks to scope it' },
+      { title:'Build', sub:'Six-week cycle' },
+      { title:'Ship', sub:'Then we talk about it here' } ] }, { label:'Theme lifecycle', parentId: sec3.id }),
+    S('people', { title:'Who owns [[what]]', items:[
+      { name:'Maya Chen', role:'Onboarding', line:'' },
+      { name:'Tomás Rivera', role:'Mobile', line:'' },
+      { name:'Dana Okafor', role:'Pricing', line:'' } ] }, { label:'Theme owners', parentId: sec3.id }),
     S('image', { title:'The Roadmap on [[One Page]]', src:'', fit:'contain' }, { label:'Roadmap snapshot', parentId: sec3.id }),
     S('section', { kicker:'If time allows', title:'Open [[Floor]]', subtitle:'', ghost:'' }, { label:'Open floor' }),
     S('closing', { title:'Thanks for joining!', kicker:'Coming Soon', tease:'‘Customer Week’', badge:'Questions? Drop them in the chat — or unmute.' }, { label:'Thanks' })
@@ -2272,6 +2573,7 @@ function sampleDeck() {
   const d = newDeck('Q3 All-Hands (Sample Deck)');
   d.slides = slides;
   d.settings.showCounter = true;
+  d.meta.org = 'Acme Corp · Confidential';
   return d;
 }
 
