@@ -36,6 +36,7 @@ input, textarea, select { font-family:inherit; }
 @keyframes growX { from { transform:scaleX(0); } to { transform:scaleX(1); } }
 @keyframes zoomIn { from { opacity:0; transform:scale(.86); } to { opacity:1; transform:scale(1); } }
 @keyframes slideL { from { opacity:0; transform:translateX(-60px); } to { opacity:1; transform:none; } }
+@keyframes ringIn { from { stroke-dashoffset:var(--ring-full); } }
 @keyframes drift { 0% { transform:translate(0,0); opacity:.25; } 50% { transform:translate(24px,-38px); opacity:.9; } 100% { transform:translate(0,0); opacity:.25; } }
 @keyframes breathe { 0%,100% { transform:scale(1); opacity:.5; } 50% { transform:scale(1.18); opacity:.85; } }
 @keyframes nudge { 0%,100% { transform:translateX(0); } 50% { transform:translateX(14px); } }
@@ -300,7 +301,7 @@ input, textarea, select { font-family:inherit; }
 
 <script>
 'use strict';
-const APP_VERSION = '1.4.0';
+const APP_VERSION = '1.5.0';
 /* A published player file carries its deck in a #baked-deck tag (in <head>, so it's parsed before this script) */
 const BAKED = document.getElementById('baked-deck');
 const PLAYER = !!BAKED;
@@ -709,6 +710,209 @@ const LAYOUTS = {
         <div style="flex:1;margin-top:38px;border-radius:22px;overflow:hidden;border:1px solid rgba(var(--acc-rgb),.3);box-shadow:0 40px 90px -40px rgba(0,0,0,.8);background:#000;${an('zoomIn',.9,.26)}">${vid}</div>`;
       return `<div style="position:absolute;inset:0;padding:${ey?'80px 150px 90px':'90px 150px'};display:flex;flex-direction:column">
         ${ey ? eyebrowBar(ey) : ''}${inner}</div>`;
+    }
+  },
+
+  quote: {
+    name:'Quote', icon:'❞',
+    desc:'A big quotation with a giant ghost quote mark and who said it — testimonials, customer voice, a memorable line.',
+    fields:[ FA('quote','Quote', RICH_HINT, 4), F('name','Attribution name'), F('role','Role / company (optional)') ],
+    defaults:{ quote:'The best way to predict the future is to [[build it]].', name:'A Customer', role:'Head of Product, Acme' },
+    render(c, ey) {
+      const inner = `
+        <div style="position:relative;padding-left:40px">
+          <div class="fp" style="position:absolute;left:-70px;top:-170px;font-weight:800;font-size:520px;line-height:1;color:rgba(var(--acc-rgb),.14);pointer-events:none;${an('fade',1.2)}">“</div>
+          <div style="position:relative;font-size:70px;line-height:1.3;font-weight:500;max-width:1480px;text-wrap:pretty;${an('rise',.9,.15)}">${rich(c.quote)}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:28px;margin-top:64px;padding-left:40px;${an('rise',.9,.45)}">
+          <div style="width:72px;height:5px;background:linear-gradient(90deg,var(--acc),var(--acc2));border-radius:4px"></div>
+          <div>
+            <div class="fp" style="font-weight:700;font-size:38px">${rich(c.name)}</div>
+            ${c.role ? `<div style="font-size:28px;color:rgba(var(--ink-rgb),.6);margin-top:6px">${rich(c.role)}</div>` : ''}
+          </div>
+        </div>`;
+      return ey ? eyebrowWrap(ey, inner) : `<div style="position:absolute;inset:0;padding:0 150px;display:flex;flex-direction:column;justify-content:center">${inner}</div>`;
+    }
+  },
+
+  bars: {
+    name:'Data Bars', icon:'▤',
+    desc:'A simple horizontal bar chart — 2–6 labelled values, bars scaled to the largest. No chart library, prints cleanly.',
+    fields:[ FA('title','Heading', RICH_HINT),
+      FL('items','Bars', [ F('label','Label'), F('value','Value (a plain number — sets the bar length)'), F('display','Shown value (optional, e.g. 42% or $1.2M)'), FS('tone','Color', [['gold','Gold'],['orange','Orange'],['ink','Neutral']]) ], 6, 'Bar') ],
+    defaults:{ title:'Where the [[growth]] came from', items:[ {label:'Enterprise', value:'62', display:'62%', tone:'gold'}, {label:'Mid-market', value:'27', display:'27%', tone:'gold'}, {label:'Self-serve', value:'11', display:'11%', tone:'orange'} ] },
+    render(c, ey) {
+      const items = c.items || [];
+      const num = v => Math.max(0, parseFloat(String(v == null ? '' : v).replace(/[^0-9.\-]/g, '')) || 0);
+      const max = Math.max(1, ...items.map(it => num(it.value)));
+      const many = items.length > 4, h = many ? 46 : 58, fs = many ? 32 : 38;
+      const rows = items.map((it, i) => {
+        const fill = it.tone==='orange' ? 'linear-gradient(90deg,var(--acc2),rgba(var(--acc2-rgb),.7))' : it.tone==='ink' ? 'rgba(var(--ink-rgb),.5)' : 'linear-gradient(90deg,var(--acc),var(--accB))';
+        const vcol = it.tone==='orange' ? 'var(--acc2)' : it.tone==='ink' ? 'rgba(var(--ink-rgb),.8)' : 'var(--acc)';
+        return `<div style="display:flex;align-items:center;gap:36px;${an('rise',.7,.2+i*.12)}">
+          <div style="flex:none;width:440px;font-size:${fs}px;font-weight:600;line-height:1.2;text-align:right;color:rgba(var(--ink-rgb),.88)">${rich(it.label)}</div>
+          <div style="flex:1;height:${h}px;background:rgba(var(--card-rgb),.05);border-radius:12px;overflow:hidden">
+            <div style="height:100%;width:${(num(it.value) / max * 100).toFixed(1)}%;background:${fill};border-radius:12px;transform-origin:left;${an('growX',1,.35+i*.12)}"></div></div>
+          <div class="fp" style="flex:none;width:220px;font-weight:800;font-size:${fs+4}px;color:${vcol}">${rich(it.display || it.value)}</div>
+        </div>`;
+      }).join('');
+      const inner = `<div class="fp" style="font-weight:800;font-size:104px;letter-spacing:-.025em;${an('rise',.8)}">${rich(c.title)}</div>
+        <div style="display:flex;flex-direction:column;gap:${many ? 26 : 36}px;margin-top:70px">${rows}</div>`;
+      return ey ? eyebrowWrap(ey, inner) : `<div style="position:absolute;inset:0;padding:0 150px;display:flex;flex-direction:column;justify-content:center">${inner}</div>`;
+    }
+  },
+
+  process: {
+    name:'Process Flow', icon:'⇢',
+    desc:'3–5 numbered steps joined by a line — how something works, a workflow, a sequence of stages.',
+    fields:[ FA('title','Heading', RICH_HINT),
+      FL('items','Steps', [ F('title','Step title'), FA('sub','One-liner (optional)', '', 2) ], 5, 'Step') ],
+    defaults:{ title:'How it [[works]]', items:[ {title:'Capture', sub:'Notes land in the inbox'}, {title:'Shape', sub:'Turn them into slides'}, {title:'Present', sub:'Walk the room through it'} ] },
+    render(c, ey) {
+      const items = c.items || [];
+      const n = items.length || 1, small = n > 3, d = small ? 86 : 104;
+      const cells = items.map((it, i) => `
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 16px;${an('rise',.8,.3+i*.16)}">
+          <div class="fp" style="width:${d}px;height:${d}px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:${small?36:44}px;color:var(--deep);background:linear-gradient(135deg,var(--acc),var(--accB));box-shadow:0 0 0 10px rgba(var(--acc-rgb),.12)">${i+1}</div>
+          <div class="fp" style="font-weight:700;font-size:${small?32:38}px;margin-top:34px;line-height:1.2">${rich(it.title)}</div>
+          ${it.sub ? `<div style="font-size:${small?24:28}px;line-height:1.35;color:rgba(var(--ink-rgb),.62);margin-top:12px;max-width:${small?300:380}px;text-wrap:pretty">${rich(it.sub)}</div>` : ''}
+        </div>`).join('');
+      const inner = `
+        <div class="fp" style="font-weight:800;font-size:104px;letter-spacing:-.025em;${an('rise',.8)}">${rich(c.title)}</div>
+        <div style="position:relative;margin-top:100px">
+          <div style="position:absolute;left:${(50 / n).toFixed(2)}%;right:${(50 / n).toFixed(2)}%;top:${d / 2 - 2}px;height:4px;background:linear-gradient(90deg,var(--acc),var(--acc2));opacity:.55;transform-origin:left;${an('growX',1.1,.25)}"></div>
+          <div style="position:relative;display:flex;align-items:flex-start">${cells}</div>
+        </div>`;
+      return ey ? eyebrowWrap(ey, inner) : `<div style="position:absolute;inset:0;padding:0 150px;display:flex;flex-direction:column;justify-content:center">${inner}</div>`;
+    }
+  },
+
+  code: {
+    name:'Code Window', icon:'‹›',
+    desc:'A monospace code or terminal snippet in a framed window with an optional filename tab and caption. Keep it to ~14 short lines.',
+    fields:[ FA('title','Heading (optional)', RICH_HINT, 2), F('file','Filename / tab label (optional)'),
+      FA('code','Code', '[[gold]] and {{orange}} highlight tokens or lines; indentation is kept', 8), FA('caption','Caption (optional)', '', 2) ],
+    defaults:{ title:'', file:'app.js', code:'function greet(name) {\n  return `Hello, ${name}!`;\n}\n\nconsole.log([[greet]]({{"Greenroom"}}));', caption:'' },
+    render(c, ey) {
+      const lines = String(c.code || '').split('\n').length;
+      const fs = lines > 20 ? 22 : lines > 14 ? 26 : 30;
+      const win = `<div style="border-radius:22px;overflow:hidden;border:1px solid rgba(var(--acc-rgb),.3);background:rgba(var(--card-rgb),.05);box-shadow:0 40px 90px -40px rgba(0,0,0,.6);max-height:${c.title ? 720 : 860}px;display:flex;flex-direction:column;${an('zoomIn',.9,.2)}">
+        <div style="display:flex;align-items:center;gap:12px;padding:20px 28px;border-bottom:1px solid rgba(var(--ink-rgb),.1)">
+          <div style="width:16px;height:16px;border-radius:50%;background:var(--acc2)"></div>
+          <div style="width:16px;height:16px;border-radius:50%;background:var(--acc)"></div>
+          <div style="width:16px;height:16px;border-radius:50%;background:rgba(var(--ink-rgb),.3)"></div>
+          ${c.file ? `<div style="margin-left:18px;font-family:ui-monospace,Consolas,monospace;font-size:22px;color:rgba(var(--ink-rgb),.55)">${esc(c.file)}</div>` : ''}
+        </div>
+        <div style="padding:34px 40px;font-family:ui-monospace,Consolas,'Courier New',monospace;font-size:${fs}px;line-height:1.55;white-space:pre-wrap;overflow:hidden;color:rgba(var(--ink-rgb),.92);text-align:left">${rich(c.code)}</div>
+      </div>`;
+      const inner = `
+        ${c.title ? `<div class="fp" style="font-weight:800;font-size:76px;letter-spacing:-.025em;margin-bottom:38px;${an('rise',.8,.1)}">${rich(c.title)}</div>` : ''}
+        ${win}
+        ${c.caption ? `<div style="font-size:30px;color:rgba(var(--ink-rgb),.62);margin-top:30px;${an('fade',.8,.5)}">${rich(c.caption)}</div>` : ''}`;
+      return ey ? eyebrowWrap(ey, inner) : `<div style="position:absolute;inset:0;padding:0 150px;display:flex;flex-direction:column;justify-content:center">${inner}</div>`;
+    }
+  },
+
+  beforeafter: {
+    name:'Before / After', icon:'⇄',
+    desc:'Two panels with an arrow between — the old way muted on the left, the new way glowing on the right. A transformation with a verdict built in.',
+    fields:[ FA('title','Heading', RICH_HINT), F('beforeKicker','Left label'), FA('before','Left text', RICH_HINT), F('afterKicker','Right label'), FA('after','Right text', RICH_HINT) ],
+    defaults:{ title:'From [[this]] to [[that]]', beforeKicker:'Before', before:'Decks lived in six places and nobody had the latest one.', afterKicker:'After', after:'One file. Open it anywhere. Always current.' },
+    render(c, ey) {
+      const panel = (kick, text, on, d) => `<div style="border-radius:30px;padding:60px 56px;min-height:420px;display:flex;flex-direction:column;justify-content:center;${on
+        ? 'background:rgba(var(--acc-rgb),.09);border:1px solid rgba(var(--acc-rgb),.55);box-shadow:0 0 80px -20px rgba(var(--acc-rgb),.45)'
+        : 'background:rgba(var(--card-rgb),.03);border:1px solid rgba(var(--ink-rgb),.18)'};${an('rise',.9,d)}">
+        <div class="fp" style="font-weight:600;font-size:24px;letter-spacing:.3em;text-transform:uppercase;color:${on?'var(--acc)':'rgba(var(--ink-rgb),.5)'}">${rich(kick)}</div>
+        <div style="font-size:44px;line-height:1.35;margin-top:30px;text-wrap:pretty;color:${on?'rgba(var(--ink-rgb),.96)':'rgba(var(--ink-rgb),.62)'}">${rich(text)}</div>
+      </div>`;
+      const inner = `
+        <div class="fp" style="font-weight:800;font-size:104px;letter-spacing:-.025em;${an('rise',.8)}">${rich(c.title)}</div>
+        <div style="display:grid;grid-template-columns:1fr 150px 1fr;align-items:center;margin-top:70px">
+          ${panel(c.beforeKicker, c.before, false, .25)}
+          <div class="fp" style="text-align:center;font-weight:800;font-size:110px;line-height:1;color:var(--acc);${an('zoomIn',.8,.55)}">→</div>
+          ${panel(c.afterKicker, c.after, true, .4)}
+        </div>`;
+      return ey ? eyebrowWrap(ey, inner) : `<div style="position:absolute;inset:0;padding:0 150px;display:flex;flex-direction:column;justify-content:center">${inner}</div>`;
+    }
+  },
+
+  ring: {
+    name:'Progress Ring', icon:'◔',
+    desc:'One big percentage drawn as an animated ring, with a heading and supporting text beside it — completion, adoption, a survey result.',
+    fields:[ F('value','Percent (0–100)'), F('display','Text inside the ring (optional, defaults to the percent)'), FA('title','Heading', RICH_HINT), FA('body','Supporting text (optional)', RICH_HINT), FS('tone','Ring color', [['gold','Gold'],['orange','Orange']]) ],
+    defaults:{ value:'72', display:'', title:'of teams have [[switched]]', body:'Up from 41% at the start of the year.', tone:'gold' },
+    render(c, ey) {
+      const pct = Math.max(0, Math.min(100, parseFloat(c.value) || 0));
+      const R = 84, C = 2 * Math.PI * R, off = C * (1 - pct / 100);
+      const col = c.tone === 'orange' ? 'var(--acc2)' : 'var(--acc)';
+      const label = c.display || (pct + '%');
+      const inner = `<div style="display:grid;grid-template-columns:560px 1fr;align-items:center;gap:110px">
+        <div style="position:relative;width:560px;height:560px;${an('zoomIn',.8)}">
+          <svg viewBox="0 0 200 200" width="560" height="560" style="display:block;transform:rotate(-90deg)">
+            <circle cx="100" cy="100" r="${R}" fill="none" stroke="rgba(var(--ink-rgb),.12)" stroke-width="14"/>
+            <circle cx="100" cy="100" r="${R}" fill="none" stroke="${col}" stroke-width="14" stroke-linecap="round" stroke-dasharray="${C.toFixed(2)}" stroke-dashoffset="${off.toFixed(2)}" style="--ring-full:${C.toFixed(2)};${an('ringIn',1.5,.3)}"/>
+          </svg>
+          <div class="fp" style="position:absolute;inset:0;display:grid;place-items:center;font-weight:800;font-size:${String(label).length > 4 ? 88 : 124}px;letter-spacing:-.04em;color:${col};${an('fade',1,.8)}">${rich(label)}</div>
+        </div>
+        <div>
+          <div class="fp" style="font-weight:800;font-size:96px;line-height:1.02;letter-spacing:-.03em;${an('rise',.9,.2)}">${rich(c.title)}</div>
+          ${c.body ? `<div style="font-size:40px;line-height:1.4;color:rgba(var(--ink-rgb),.72);margin-top:40px;max-width:900px;text-wrap:pretty;${an('rise',.9,.4)}">${rich(c.body)}</div>` : ''}
+        </div></div>`;
+      return ey ? eyebrowWrap(ey, inner) : `<div style="position:absolute;inset:0;padding:0 150px;display:flex;flex-direction:column;justify-content:center">${inner}</div>`;
+    }
+  },
+
+  people: {
+    name:'People Grid', icon:'👥',
+    desc:'2–6 people cards with auto-generated initials avatars — team intros, owners, speakers.',
+    fields:[ FA('title','Heading', RICH_HINT),
+      FL('items','People', [ F('name','Name'), F('role','Role / title'), FA('line','One-liner (optional)', '', 2) ], 6, 'Person') ],
+    defaults:{ title:'Meet the [[team]]', items:[ {name:'Ada Lovelace', role:'Engineering', line:''}, {name:'Grace Hopper', role:'Platform', line:''}, {name:'Alan Turing', role:'Research', line:''} ] },
+    render(c, ey) {
+      const items = c.items || [];
+      const n = items.length || 1, wide = n > 3, cols = wide ? 3 : n;
+      const initials = nm => plain(nm).trim().split(/\s+/).map(w => w[0] || '').slice(0, 2).join('').toUpperCase();
+      const cards = items.map((it, i) => {
+        const grad = i % 2 ? 'linear-gradient(135deg,var(--acc2),var(--acc2Soft))' : 'linear-gradient(135deg,var(--acc),var(--accB))';
+        const av = `<div class="fp" style="flex:none;width:${wide?96:130}px;height:${wide?96:130}px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:${wide?38:50}px;color:var(--deep);background:${grad}">${esc(initials(it.name))}</div>`;
+        return `<div style="display:flex;${wide?'align-items:center;gap:30px':'flex-direction:column;align-items:center;text-align:center;gap:26px'};background:rgba(var(--card-rgb),.045);border:1px solid rgba(var(--acc-rgb),.2);border-radius:26px;padding:${wide?'34px 38px':'54px 40px'};${an('rise',.8,.25+i*.12)}">
+          ${av}
+          <div style="min-width:0">
+            <div class="fp" style="font-weight:700;font-size:${wide?32:38}px;line-height:1.15">${rich(it.name)}</div>
+            ${it.role ? `<div class="fp" style="font-weight:600;font-size:${wide?20:22}px;letter-spacing:.2em;text-transform:uppercase;color:rgba(var(--acc-rgb),.85);margin-top:10px">${rich(it.role)}</div>` : ''}
+            ${it.line ? `<div style="font-size:${wide?24:27}px;line-height:1.35;color:rgba(var(--ink-rgb),.62);margin-top:12px;text-wrap:pretty">${rich(it.line)}</div>` : ''}
+          </div></div>`;
+      }).join('');
+      const inner = `<div class="fp" style="font-weight:800;font-size:104px;letter-spacing:-.025em;${an('rise',.8)}">${rich(c.title)}</div>
+        <div style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:34px;margin-top:70px">${cards}</div>`;
+      return ey ? eyebrowWrap(ey, inner) : `<div style="position:absolute;inset:0;padding:0 150px;display:flex;flex-direction:column;justify-content:center">${inner}</div>`;
+    }
+  },
+
+  dodont: {
+    name:'Do / Don’t', icon:'✓',
+    desc:'Two columns of short rules — checkmarks on the left, crosses on the right. Guidelines, standards, etiquette.',
+    fields:[ FA('title','Heading', RICH_HINT), F('doHead','Left heading'), FL('dos','Do items', [ FA('text','Text', RICH_HINT, 2) ], 5, 'Item'),
+      F('dontHead','Right heading'), FL('donts','Don’t items', [ FA('text','Text', RICH_HINT, 2) ], 5, 'Item') ],
+    defaults:{ title:'Ground [[rules]]', doHead:'Do', dos:[ {text:'Keep one idea per slide'}, {text:'Put the detail in your notes'} ], dontHead:'Don’t', donts:[ {text:'Read the slide aloud'}, {text:'Paste in a wall of text'} ] },
+    render(c, ey) {
+      const col = (head, items, good, d) => {
+        const rgb = good ? 'var(--acc-rgb)' : 'var(--acc2-rgb)', color = good ? 'var(--acc)' : 'var(--acc2)', mark = good ? '✓' : '✕';
+        return `<div style="background:rgba(${rgb},${good?'.07':'.08'});border:1px solid rgba(${rgb},${good?'.3':'.35'});border-radius:28px;padding:48px 52px;${an('rise',.9,d)}">
+          <div style="display:flex;align-items:center;gap:22px">
+            <div class="fp" style="width:60px;height:60px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:32px;color:var(--deep);background:${color}">${mark}</div>
+            <div class="fp" style="font-weight:800;font-size:46px;color:${color}">${rich(head)}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:26px;margin-top:38px">${(items || []).map((it, i) => `
+            <div style="display:flex;gap:22px;align-items:flex-start;${an('rise',.7,d+.2+i*.1)}">
+              <div class="fp" style="flex:none;font-weight:700;font-size:30px;color:${color};opacity:.8;margin-top:4px">${mark}</div>
+              <div style="font-size:36px;line-height:1.35;color:rgba(var(--ink-rgb),.9);text-wrap:pretty">${rich(it.text)}</div>
+            </div>`).join('')}</div>
+        </div>`;
+      };
+      const inner = `<div class="fp" style="font-weight:800;font-size:104px;letter-spacing:-.025em;${an('rise',.8)}">${rich(c.title)}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:50px;margin-top:66px;align-items:start">${col(c.doHead, c.dos, true, .2)}${col(c.dontHead, c.donts, false, .35)}</div>`;
+      return ey ? eyebrowWrap(ey, inner) : `<div style="position:absolute;inset:0;padding:0 150px;display:flex;flex-direction:column;justify-content:center">${inner}</div>`;
     }
   }
 };
@@ -1465,6 +1669,7 @@ const GUIDE_TABS = {
     <h4>Building slides</h4>
     <ul>
       <li><b>+ Add slide</b> opens a visual picker — each card is a live preview of that layout. Slides land after the selected one.</li>
+      <li><b>21 layouts</b> cover titles, sections, lists, and comparisons, plus data (<b>Big Stats</b>, <b>Data Bars</b>, <b>Progress Ring</b>), <b>Quote</b>, <b>Process Flow</b>, <b>Before / After</b>, <b>Code Window</b>, <b>People Grid</b>, and <b>Do / Don’t</b> — all pure text, no images required.</li>
       <li>Reorder by <b>dragging</b> in the left list (or the ▴▾ arrows on hover); hover also reveals <b>duplicate</b> and <b>delete</b>.</li>
       <li>Picked the wrong look? Use <b>Layout → Change…</b> in the right panel: it previews <i>your slide’s own content</i> in every layout before you commit.</li>
       <li><b>Group into sections:</b> add a <b>Section Splash</b>, then set <b>Parent section</b> on its detail slides — they inherit the section name as an eyebrow label and nest in the thumbnail rail.</li>
@@ -1578,7 +1783,9 @@ function buildHelperPrompt() {
         content: { kicker: 'Part One', title: 'Q2 [[Results]]', subtitle: 'The numbers and the story behind them', ghost: '01' } },
       { id: 's4', layout: 'statement', parentId: 's3', label: 'Headline result', notes: 'Pause here. Let it land.', cue: 'Tell the Meridian win story',
         content: { title: 'The headline', body: 'Revenue grew [[18%]] quarter over quarter.', punch: 'Our best quarter yet.' } },
-      { id: 's5', layout: 'closing', parentId: null, label: 'Thanks', notes: '',
+      { id: 's5', layout: 'bars', parentId: 's3', label: 'Growth by segment', notes: 'Enterprise carried the quarter.',
+        content: { title: 'Where the [[growth]] came from', items: [ { label: 'Enterprise', value: '62', display: '62%', tone: 'gold' }, { label: 'Self-serve', value: '38', display: '38%', tone: 'orange' } ] } },
+      { id: 's6', layout: 'closing', parentId: null, label: 'Thanks', notes: '',
         content: { title: 'Thank you!', kicker: 'Up Next', tease: 'Q3 Planning Week', badge: 'Slides and recording will be shared after' } }
     ]
   };
@@ -1634,7 +1841,10 @@ ${layoutDocs}
 DESIGN GUIDANCE
 - Slides are static (no click-to-reveal), so keep each slide to ONE idea. Headlines short and punchy; body text 1-3 sentences maximum. Move detail into "notes".
 - Typical flow: hero (title slide) -> topics (agenda) -> a "section" splash per major segment (ghost "01", "02", ... and kicker "Part One", "Part Two", ...) with that segment's detail slides as its children via parentId -> closing.
-- Vary layouts across the deck. Use "statement" for one big message, "callout" right before a demo or discussion, "compare" for 2-3 side-by-side ideas, "bullets" only when a list is genuinely needed (max ~5 bullets).
+- Vary layouts across the deck. Use "statement" for one big message, "callout" right before a demo or discussion, "compare" for 2-3 side-by-side ideas, "beforeafter" for a then-vs-now transformation, "dodont" for rules or guidelines, and "bullets" only when a list is genuinely needed (max ~5 bullets).
+- Numbers: "stats" for 2-4 headline figures, "bars" when several values should be compared visually (give "value" as a plain number and put the units in "display"), "ring" for a single percentage.
+- People and process: "people" for team intros or owners (name + role, no photos needed), "process" for how-something-works steps, "timeline" for dated milestones with status.
+- "quote" for a testimonial or a memorable line, with who said it. "code" for a short code or terminal snippet (max ~14 lines, keep lines under ~60 characters; wrap a key token in [[ ]] to highlight it).
 - If my outline references a screenshot, chart, or picture, use the "image" layout with "src": "" - I will attach the actual image inside the app.
 - If my outline is thin in places, make reasonable choices and keep going; I will refine everything in the app afterwards.
 
@@ -2329,6 +2539,11 @@ function sampleDeck() {
     S('compare', { title:'What drove the [[quarter]]', style:'columns', items:[
       { text:'New enterprise accounts closed faster than in any prior quarter', tone:'gold' },
       { text:'Churn fell to its lowest level in two years', tone:'orange' } ] }, { label:'What drove it', parentId: sec1.id }),
+    S('bars', { title:'Growth by [[segment]]', items:[
+      { label:'Enterprise', value:'62', display:'62%', tone:'gold' },
+      { label:'Mid-market', value:'27', display:'27%', tone:'gold' },
+      { label:'Self-serve', value:'11', display:'11%', tone:'orange' } ] }, { label:'Growth by segment', parentId: sec1.id }),
+    S('ring', { value:'72', display:'', title:'of accounts renewed [[early]]', body:'Up from 41% this time last year.', tone:'gold' }, { label:'Early renewals', parentId: sec1.id }),
     S('callout', { badge:'Live Demo', title:'Let’s See It\n[[in Action]]' }, { label:'Live demo', parentId: sec1.id }),
     sec2,
     S('bullets', { title:'What we [[heard]]', items:[
@@ -2336,11 +2551,21 @@ function sampleDeck() {
       { text:'The new documentation is a clear win' },
       { text:'Mobile still lags the desktop experience' },
       { text:'Pricing tiers are {{confusing}} — our most-repeated theme' } ] }, { label:'What we heard', parentId: sec2.id }),
+    S('quote', { quote:'We stopped dreading onboarding week. It just [[happens]] now.', name:'Priya Natarajan', role:'Head of Operations, Northwind' }, { label:'In their words', parentId: sec2.id }),
     sec3,
     S('statement', { title:'', body:'Ship fewer things — [[finish]] more of them.\nQ4 is built around three themes, not a feature list.', punch:'' }, { label:'Roadmap philosophy', parentId: sec3.id }),
     S('compare', { title:'How to read the roadmap', style:'cards', items:[
       { kicker:'The plan', text:'says [[what we will build]]', tone:'gold' },
       { kicker:'The bet', text:'says {{why it will matter}}', tone:'orange' } ] }, { label:'How to read it', parentId: sec3.id }),
+    S('process', { title:'How a theme becomes [[shipped]]', items:[
+      { title:'Pitch', sub:'One page, one owner' },
+      { title:'Shape', sub:'Two weeks to scope it' },
+      { title:'Build', sub:'Six-week cycle' },
+      { title:'Ship', sub:'Then we talk about it here' } ] }, { label:'Theme lifecycle', parentId: sec3.id }),
+    S('people', { title:'Who owns [[what]]', items:[
+      { name:'Maya Chen', role:'Onboarding', line:'' },
+      { name:'Tomás Rivera', role:'Mobile', line:'' },
+      { name:'Dana Okafor', role:'Pricing', line:'' } ] }, { label:'Theme owners', parentId: sec3.id }),
     S('image', { title:'The Roadmap on [[One Page]]', src:'', fit:'contain' }, { label:'Roadmap snapshot', parentId: sec3.id }),
     S('section', { kicker:'If time allows', title:'Open [[Floor]]', subtitle:'', ghost:'' }, { label:'Open floor' }),
     S('closing', { title:'Thanks for joining!', kicker:'Coming Soon', tease:'‘Customer Week’', badge:'Questions? Drop them in the chat — or unmute.' }, { label:'Thanks' })

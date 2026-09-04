@@ -2,7 +2,7 @@
 
 **A one-file slide studio.** Design a deck, present it full-screen, and carry the whole thing anywhere — designer, presenter, themes, and your saved decks all live in a single HTML file that runs straight from disk. No install, no server, no internet, no account.
 
-> Current version: **1.4.0** (shown next to the logo in the app)
+> Current version: **1.5.0** (shown next to the logo in the app)
 
 ## Quick start
 
@@ -15,7 +15,7 @@ A built-in guide opens on first launch and stays available under the **?** butto
 ## What's inside
 
 ### Design
-- **13 slide layouts** — hero, section splash, statement, topic grid, split + card, comparison, image, video, bulleted list, big callout, big stats, timeline, and closing — chosen from a **visual picker** with live thumbnails. Picked wrong? *Layout → Change…* previews **your own content** poured into every other layout before you commit.
+- **21 slide layouts** — hero, section splash, statement, topic grid, split + card, comparison, before / after, image, video, code window, bulleted list, do / don’t, big callout, quote, big stats, data bars, progress ring, timeline, process flow, people grid, and closing — chosen from a **visual picker** with live thumbnails. Picked wrong? *Layout → Change…* previews **your own content** poured into every other layout before you commit.
 - **Rich text markup** in any field: `[[gold accent]]`, `{{orange accent}}`, `[link text](url)` (opens in a new tab), and line breaks.
 - **Sections & grouping** — child slides inherit their section's name as an eyebrow label and nest in the thumbnail rail.
 - **Slide sorter** (⊞) — the whole deck as a drag-to-reorder grid. **Ctrl+F** searches all text across the deck.
