@@ -61,16 +61,28 @@ input, textarea, select { font-family:inherit; }
 .brand span { color:#e8e6df; }
 .brand .ver { font-family:Figtree, sans-serif; font-style:normal; font-weight:500; font-size:10px; letter-spacing:.05em; color:rgba(232,230,223,.38); margin-left:7px; vertical-align:2px; }
 .gver { font-size:11px; color:rgba(232,230,223,.35); margin-right:auto; align-self:center; }
-.deck-title { background:rgba(var(--card-rgb),.05); border:1px solid rgba(227,197,103,.16); color:#f2f0e9; border-radius:8px; padding:7px 12px; font-size:14px; width:280px; }
+.deck-title { background:rgba(var(--card-rgb),.05); border:1px solid rgba(227,197,103,.16); color:#f2f0e9; border-radius:8px; padding:7px 12px; font-size:14px; flex:1 1 220px; min-width:150px; max-width:420px; }
 .deck-title:focus { outline:none; border-color:rgba(227,197,103,.5); }
 .tb-spacer { flex:1; }
+.tb-sep { width:1px; height:24px; background:rgba(227,197,103,.16); margin:0 4px; flex:none; }
 .btn { background:rgba(255,255,255,.06); color:#e8e6df; border:1px solid rgba(227,197,103,.2); border-radius:8px; padding:7px 13px; font-size:13px; cursor:pointer; white-space:nowrap; }
 .btn:hover { background:rgba(227,197,103,.14); border-color:rgba(227,197,103,.4); }
 .btn.primary { background:linear-gradient(96deg,#E3C567,#F2DD9B); color:#0B2318; font-weight:700; border:none; }
 .btn.primary:hover { filter:brightness(1.06); }
 .btn.danger:hover { background:rgba(222,80,60,.2); border-color:rgba(222,80,60,.5); }
 .btn.small { padding:4px 9px; font-size:12px; }
-.save-dot { font-size:11px; color:rgba(232,230,223,.45); min-width:52px; text-align:right; }
+.btn:disabled { opacity:.32; cursor:default; }
+.btn:disabled:hover { background:rgba(255,255,255,.06); border-color:rgba(227,197,103,.2); }
+.btn.round { width:32px; height:32px; padding:0; border-radius:50%; font-family:Poppins; font-weight:700; font-size:14px; display:inline-grid; place-items:center; flex:none; }
+.save-dot { font-size:11px; color:rgba(232,230,223,.45); min-width:62px; white-space:nowrap; }
+.tbmenu { position:relative; }
+.tbmenu .caret { display:inline-block; margin-left:7px; font-size:9px; opacity:.6; vertical-align:1px; }
+.tbmenu.open > .btn { background:rgba(227,197,103,.14); border-color:rgba(227,197,103,.4); }
+.tbmenu-pop { display:none; position:absolute; top:calc(100% + 6px); left:0; min-width:230px; background:#131c16; border:1px solid rgba(227,197,103,.28); border-radius:10px; padding:6px; z-index:60; box-shadow:0 14px 34px rgba(0,0,0,.45); }
+.tbmenu.open .tbmenu-pop { display:block; }
+.tbmenu-pop button { display:flex; width:100%; align-items:center; background:none; border:none; color:#e8e6df; font-size:13px; text-align:left; padding:8px 10px; border-radius:7px; cursor:pointer; white-space:nowrap; }
+.tbmenu-pop button:hover { background:rgba(227,197,103,.14); color:#F2DD9B; }
+.tbmenu-pop button small { margin-left:auto; padding-left:20px; font-size:11px; color:rgba(232,230,223,.4); }
 
 .main { display:grid; grid-template-columns:270px 1fr 330px; min-height:0; }
 
@@ -278,7 +290,7 @@ input, textarea, select { font-family:inherit; }
 
 <script>
 'use strict';
-const APP_VERSION = '1.3.0';
+const APP_VERSION = '1.4.0';
 /* A published player file carries its deck in a #baked-deck tag (in <head>, so it's parsed before this script) */
 const BAKED = document.getElementById('baked-deck');
 const PLAYER = !!BAKED;
@@ -718,7 +730,14 @@ function renderStage(slide, deck, extraClass, opts) {
   if (slide.cue && o.cue !== false) {
     cueHtml = `<div style="position:absolute;right:64px;bottom:${o.cueLift ? 114 : 44}px;max-width:560px;text-align:right;font-size:21px;font-style:italic;line-height:1.45;letter-spacing:.02em;color:rgba(var(--ink-rgb),.38);z-index:10;${an('fade',1.2,.9)}"><span style="font-style:normal;color:rgba(var(--acc-rgb),.5)">✎ </span>${rich(slide.cue)}</div>`;
   }
-  return `<div class="stage ${extraClass||''}">${lay.render(slide.content || {}, eyebrow)}${cueHtml}</div>`;
+  /* deck-level organization mark (company name / disclaimer): left edge, above or below all layout content */
+  let orgHtml = '';
+  const org = deck.meta && deck.meta.org;
+  if (org && !slide.hideOrg && o.org !== false) {
+    const pos = (deck.settings && deck.settings.orgPos) === 'top' ? 'top:44px' : `bottom:${o.orgLift ? 114 : 44}px`;
+    orgHtml = `<div class="fp orgmark" style="position:absolute;left:150px;${pos};max-width:1100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600;font-size:20px;line-height:1.4;letter-spacing:.18em;text-transform:uppercase;color:rgba(var(--ink-rgb),.4);z-index:10">${rich(org)}</div>`;
+  }
+  return `<div class="stage ${extraClass||''}">${lay.render(slide.content || {}, eyebrow)}${orgHtml}${cueHtml}</div>`;
 }
 
 function slideTitle(s) {
@@ -727,15 +746,15 @@ function slideTitle(s) {
 
 /* ---------------- deck model ---------------- */
 function newSlide(layout) {
-  return { id: uid(), layout, parentId: null, label:'', notes:'', cue:'', duration:'', hidden:false,
+  return { id: uid(), layout, parentId: null, label:'', notes:'', cue:'', duration:'', hidden:false, hideOrg:false,
     content: JSON.parse(JSON.stringify(LAYOUTS[layout].defaults)) };
 }
 function newDeck(title) {
   return {
     id: uid(), version: 1,
-    meta: { title: title || 'Untitled Deck', created: Date.now() },
+    meta: { title: title || 'Untitled Deck', created: Date.now(), org: '' },
     theme: 'emerald',
-    settings: { nav:'dots', showSkip:true, showCounter:false, transition:'fade', ambient:true, autoHideChrome:true, autoPlay:false, autoSeconds:8, autoLoop:false, targetMinutes:'' },
+    settings: { nav:'dots', showSkip:true, showCounter:false, transition:'fade', ambient:true, autoHideChrome:true, autoPlay:false, autoSeconds:8, autoLoop:false, targetMinutes:'', orgPos:'bottom' },
     slides: [ newSlide('hero'), newSlide('section'), newSlide('topics'), newSlide('closing') ]
   };
 }
@@ -745,16 +764,18 @@ function validateDeck(d) {
   if (!d.slides.length) throw new Error('Deck has no slides.');
   d.version = d.version || 1;
   d.id = d.id || uid();
-  d.meta = Object.assign({ title:'Untitled Deck', created: Date.now() }, d.meta);
+  d.meta = Object.assign({ title:'Untitled Deck', created: Date.now(), org: '' }, d.meta);
+  if (typeof d.meta.org !== 'string') d.meta.org = '';
   d.theme = (THEMES[d.theme] || d.theme === 'custom') ? d.theme : 'emerald';
   if (d.theme === 'custom') d.customTheme = Object.assign({}, DEFAULT_CUSTOM, d.customTheme || {});
-  d.settings = Object.assign({ nav:'dots', showSkip:true, showCounter:false, transition:'fade', ambient:true, autoHideChrome:true, autoPlay:false, autoSeconds:8, autoLoop:false, targetMinutes:'' }, d.settings);
+  d.settings = Object.assign({ nav:'dots', showSkip:true, showCounter:false, transition:'fade', ambient:true, autoHideChrome:true, autoPlay:false, autoSeconds:8, autoLoop:false, targetMinutes:'', orgPos:'bottom' }, d.settings);
+  if (d.settings.orgPos !== 'top') d.settings.orgPos = 'bottom';
   d.slides.forEach((s, i) => {
     if (!LAYOUTS[s.layout]) throw new Error(`Slide ${i+1}: unknown layout "${s.layout}".`);
     s.id = s.id || uid();
     s.content = Object.assign(JSON.parse(JSON.stringify(LAYOUTS[s.layout].defaults)), s.content || {});
     s.parentId = s.parentId || null;
-    s.label = s.label || ''; s.notes = s.notes || ''; s.cue = s.cue || ''; s.duration = s.duration || ''; s.hidden = !!s.hidden;
+    s.label = s.label || ''; s.notes = s.notes || ''; s.cue = s.cue || ''; s.duration = s.duration || ''; s.hidden = !!s.hidden; s.hideOrg = !!s.hideOrg;
   });
   return d;
 }
@@ -845,6 +866,9 @@ function touch() {
 function updateSaveDot() {
   const el = $('#savedot');
   if (el) el.textContent = saveState === 'saved' ? 'Saved' : saveState === 'saving' ? 'Saving…' : 'Save failed';
+  const u = $('#undobtn'), r = $('#redobtn');
+  if (u) u.disabled = !undoStack.length;
+  if (r) r.disabled = !redoStack.length;
 }
 
 /* ---------------- designer ---------------- */
@@ -860,20 +884,27 @@ function renderDesign() {
   <div class="studio">
     <div class="topbar">
       <div class="brand">Green<span>room</span><em class="ver">v${APP_VERSION}</em></div>
+      <button class="btn" data-act="decks" title="Your saved decks in this browser">Decks</button>
       <input class="deck-title" id="titlein" value="${esc(deck.meta.title)}" title="Deck title">
-      <button class="btn" data-act="decks">Decks</button>
-      <button class="btn" data-act="aiprompt" title="Copy a prompt that teaches your AI of choice to draft a deck JSON from your outline">✨ AI Prompt</button>
-      <button class="btn" data-act="import">Import JSON</button>
-      <button class="btn" data-act="export">Export JSON</button>
-      <button class="btn" data-act="playerexport" title="Export a standalone HTML that opens straight into this presentation — no designer, nothing to import">Publish Player</button>
-      <button class="btn" data-act="json">JSON</button>
-      <button class="btn" data-act="guide">Guide</button>
-      <div class="tb-spacer"></div>
-      <button class="btn" data-act="undo" title="Undo (Ctrl+Z)">↶</button>
-      <button class="btn" data-act="redo" title="Redo (Ctrl+Y)">↷</button>
+      <button class="btn" data-act="undo" id="undobtn" title="Undo (Ctrl+Z)">↶</button>
+      <button class="btn" data-act="redo" id="redobtn" title="Redo (Ctrl+Y)">↷</button>
       <div class="save-dot" id="savedot">Saved</div>
-      <button class="btn" data-act="print">Print / PDF</button>
+      <div class="tb-sep"></div>
+      <button class="btn" data-act="aiprompt" title="Copy a prompt that teaches your AI of choice to draft a deck JSON from your outline">✨ AI Prompt</button>
+      <div class="tbmenu">
+        <button class="btn" data-menu="json" title="Import, export, or edit the deck as JSON">JSON<span class="caret">▾</span></button>
+        <div class="tbmenu-pop">
+          <button data-act="import">Import JSON…<small>from a file</small></button>
+          <button data-act="export">Export JSON<small>download</small></button>
+          <button data-act="json">View / edit JSON<small>in place</small></button>
+        </div>
+      </div>
+      <div class="tb-spacer"></div>
+      <button class="btn" data-act="playerexport" title="Export a standalone HTML that opens straight into this presentation — no designer, nothing to import">Publish Player</button>
+      <button class="btn" data-act="print" title="Lay out every slide for the browser’s print dialog">Print / PDF</button>
       <button class="btn primary" data-act="present">▶ Present</button>
+      <div class="tb-sep"></div>
+      <button class="btn round" data-act="guide" title="Guide">?</button>
     </div>
     <div class="main">
       <div class="slidelist" id="slidelist"></div>
@@ -976,7 +1007,9 @@ function renderProps() {
     <div class="field"><label>Autoplay duration (seconds, optional)</label><input type="number" class="in" id="f-duration" min="1" max="600" value="${esc(s.duration)}" placeholder="deck default">
       <div class="hint">Only used in autoplay mode — overrides the deck’s seconds-per-slide for this slide.</div></div>
     <div class="field"><label class="checkrow"><input type="checkbox" id="f-hidden" ${s.hidden?'checked':''}> Hide in presentation (backup slide)</label>
-      <div class="hint">Stays in the deck and designer, but navigation, autoplay, and Print/PDF skip it — perfect for appendix slides you only show if asked.</div></div>`;
+      <div class="hint">Stays in the deck and designer, but navigation, autoplay, and Print/PDF skip it — perfect for appendix slides you only show if asked.</div></div>
+    <div class="field"><label class="checkrow"><input type="checkbox" id="f-hideorg" ${s.hideOrg?'checked':''}> Hide organization mark on this slide</label>
+      <div class="hint">For title and closing slides that already carry the organization name. The mark itself is set in the Deck tab.</div></div>`;
   body.innerHTML = html;
   bindSlideProps(body, s);
 }
@@ -1038,6 +1071,7 @@ function bindSlideProps(body, s) {
   $('#f-cue', body).addEventListener('input', e => { s.cue = e.target.value; touch(); previewSoon(); });
   $('#f-duration', body).addEventListener('input', e => { s.duration = e.target.value; touch(); });
   $('#f-hidden', body).addEventListener('change', e => { s.hidden = e.target.checked; touch(); renderSlideList(); });
+  $('#f-hideorg', body).addEventListener('change', e => { s.hideOrg = e.target.checked; touch(); previewSoon(); });
 
   $$('[data-k]', body).forEach(el => {
     const f = LAYOUTS[s.layout].fields.find(x => x.k === el.dataset.k);
@@ -1108,6 +1142,11 @@ function deckSettingsHTML() {
       ${[['bg','Background'],['glow','Background glow'],['ink','Text'],['acc','Accent 1 (gold role)'],['acc2','Accent 2 (orange role)']].map(([k, lbl]) =>
         `<div class="colorrow"><span>${lbl}</span><input type="color" data-ctcolor="${k}" value="${esc((deck.customTheme||DEFAULT_CUSTOM)[k])}"></div>`).join('')}
       <div class="hint">A full theme — gradients, cards, chrome, particles — is derived from these five colors.</div></div>` : ''}
+    <div class="field"><label>Organization mark</label><input type="text" id="d-org" value="${esc(deck.meta.org || '')}" placeholder="e.g. Acme Corp · Confidential" maxlength="120">
+      <div class="hint">A company name, disclaimer, or copyright line shown small and faint on the left of every slide. Leave empty for none. Text markup works here.</div></div>
+    <div class="field"><label>Organization mark position</label>
+      <select id="d-orgpos"><option value="bottom" ${st.orgPos!=='top'?'selected':''}>Bottom-left (below content)</option><option value="top" ${st.orgPos==='top'?'selected':''}>Top-left (above content)</option></select>
+      <div class="hint">Hide it on individual slides — a title slide that already names you, say — with the checkbox in the Slide tab.</div></div>
     <div class="field"><label>Navigation style</label>
       <select id="d-nav"><option value="dots" ${st.nav==='dots'?'selected':''}>Dot pills (bottom)</option><option value="thumbs" ${st.nav==='thumbs'?'selected':''}>Thumbnail rail (left)</option></select>
       <div class="hint">Press T while presenting to toggle the rail on the fly.</div></div>
@@ -1138,6 +1177,8 @@ function bindDeckSettings(body) {
     deck.customTheme[el.dataset.ctcolor] = el.value;
     touch(); previewSoon();
   }));
+  $('#d-org', body).addEventListener('input', e => { deck.meta.org = e.target.value; touch(); previewSoon(); });
+  $('#d-orgpos', body).addEventListener('change', e => { st.orgPos = e.target.value; touch(); previewSoon(); });
   $('#d-nav', body).addEventListener('change', e => { st.nav = e.target.value; touch(); });
   $('#d-tr', body).addEventListener('change', e => { st.transition = e.target.value; touch(); });
   [['#d-skip','showSkip'],['#d-counter','showCounter'],['#d-amb','ambient'],['#d-hide','autoHideChrome'],['#d-auto','autoPlay'],['#d-autoloop','autoLoop']].forEach(([selr, k]) => {
@@ -1408,7 +1449,7 @@ const GUIDE_TABS = {
         <p>Already have notes, bullets, or an old PowerPoint? A ready-made prompt turns them into a Greenroom deck you can import and polish.</p>
         <span class="glink" data-gtab="ai">How that works →</span></div>
     </div>
-    <p>That’s genuinely all you need to start. The other tabs above go deeper whenever you’re ready — and this guide is always one click away under <b>Guide</b>.</p>` },
+    <p>That’s genuinely all you need to start. The other tabs above go deeper whenever you’re ready — and this guide is always one click away under the <b>?</b> button at the top right.</p>` },
 
   build: { name:'Build', html: () => `
     <h4>Building slides</h4>
@@ -1421,6 +1462,7 @@ const GUIDE_TABS = {
       <li><b>Undo / redo</b> with <code>Ctrl+Z</code> / <code>Ctrl+Y</code> (or the ↶ ↷ buttons) — experiment freely.</li>
       <li><b>Backup slides:</b> tick “Hide in presentation” on any slide to keep it in the deck but skip it during the show and in Print/PDF — ideal for appendix material.</li>
       <li><b>Your own colors:</b> pick “Custom colors…” as the theme in the Deck tab — five swatches derive a complete theme, saved inside the deck.</li>
+      <li><b>Organization mark:</b> in the Deck tab, enter a company name, disclaimer, or copyright line and it appears small and faint on the left of <i>every</i> slide — above all content or below it, your choice. Tick “Hide organization mark” on slides that already carry your name, like the title slide.</li>
       <li><b>⊞ Sorter</b> (under the preview) shows the whole deck as a drag-to-reorder grid; <code>Ctrl+F</code> finds text anywhere in the deck. A ⚠ badge warns when a slide’s content overflows the stage.</li>
     </ul>
     <p><b>Text markup</b> works in any content field:</p>
@@ -1442,7 +1484,7 @@ const GUIDE_TABS = {
       <li><code>G</code> opens a <b>slide grid</b> to jump anywhere visually; typing a <b>number + Enter</b> jumps directly; <code>B</code> blacks out the screen so eyes return to you.</li>
       <li><b>Rehearse with</b> <code>R</code>: it records how long you spend on each slide and shows a recap when you press it again. Set a target length in the Deck tab and the HUD timer warns as you approach it.</li>
       <li><b>Autoplay (kiosk mode)</b> in the Deck tab makes the deck run itself — set seconds per slide (or override per slide), optionally looping. <code>A</code> pauses/resumes it live.</li>
-      <li>The <b>Deck tab</b> (right panel) sets the theme — four looks, from deep emerald to light ivory — plus transition, dot-vs-rail navigation, slide counter, Skip-to-end button, and ambient background.</li>
+      <li>The <b>Deck tab</b> (right panel) sets the theme — four looks, from deep emerald to light ivory — plus transition, dot-vs-rail navigation, slide counter, Skip-to-end button, ambient background, and an organization mark shown on every slide.</li>
       <li><b>Presenting elsewhere:</b> copy this HTML file to the machine, open it in a browser, <b>Import</b> your deck’s JSON, present. A refresh won’t lose anything — the deck is saved in that browser too.</li>
     </ul>` },
 
@@ -1452,7 +1494,7 @@ const GUIDE_TABS = {
     <p><b>From notes, bullets, or an outline:</b></p>
     <ul>
       <li>Copy the AI Prompt, paste it into your AI, and add your outline where it says <i>“paste your outline below”</i>.</li>
-      <li>Save its JSON reply as a <code>.json</code> file, then <b>Import JSON</b> here and polish.</li>
+      <li>Save its JSON reply as a <code>.json</code> file, then <b>JSON ▾ → Import JSON</b> here and polish.</li>
     </ul>
     <p><b>From an existing deck (.pptx, PDF, doc):</b></p>
     <ul>
@@ -1465,12 +1507,12 @@ const GUIDE_TABS = {
     <h4>Save, share, print</h4>
     <ul>
       <li><b>Decks</b> is your library in this browser — open, create, or delete saved decks.</li>
-      <li><b>Export JSON</b> is your backup and your hand-off format; <b>Import JSON</b> loads one as a new deck.</li>
+      <li>The <b>JSON ▾</b> menu holds the data tools: <b>Export JSON</b> is your backup and your hand-off format, <b>Import JSON</b> loads one as a new deck, and <b>View / edit JSON</b> lets you tweak the raw deck in place.</li>
       <li><b>Publish Player</b> exports a standalone HTML that <i>is</i> the presentation: send it to anyone, they double-click it, and it opens straight into the show — no designer, nothing to import.</li>
       <li><b>Snapshots</b> (in the Decks dialog) are named restore points that survive reloads — take one before a big reorganization.</li>
       <li><b>Importing</b> a JSON now offers “append to current deck” — reuse a section from an old deck without leaving this one.</li>
       <li>The print view has a <b>Handout</b> mode: every slide with its speaker notes and cues beneath it — a rehearsal script or leave-behind.</li>
-      <li><b>Print / PDF</b> lays out every slide for the browser’s print dialog (Landscape, margins None, Background graphics on). Presenter cues are left out of it.</li>
+      <li><b>Print / PDF</b> lays out every slide for the browser’s print dialog (Landscape, margins None, Background graphics on). Presenter cues are left out of it; the organization mark stays in.</li>
     </ul>` }
 };
 
@@ -1513,11 +1555,11 @@ function buildHelperPrompt() {
   const themeNames = Object.keys(THEMES).map(t => JSON.stringify(t)).join(' | ');
   const example = {
     version: 1,
-    meta: { title: 'Quarterly Kickoff' },
+    meta: { title: 'Quarterly Kickoff', org: 'Acme Corp · Internal' },
     theme: 'emerald',
     settings: { nav: 'dots', showSkip: true, showCounter: true, transition: 'fade', ambient: true, autoHideChrome: true },
     slides: [
-      { id: 's1', layout: 'hero', parentId: null, label: 'Intro', notes: 'Welcome everyone, wait for the room to fill.',
+      { id: 's1', layout: 'hero', parentId: null, label: 'Intro', notes: 'Welcome everyone, wait for the room to fill.', hideOrg: true,
         content: { kicker: 'Team All-Hands', title: 'Quarterly\n[[Kickoff]]', badge: 'Questions welcome at any time' } },
       { id: 's2', layout: 'topics', parentId: null, label: 'Agenda', notes: '',
         content: { title: 'Today’s [[Agenda]]', items: [ { title: 'Where we landed', sub: 'Q2 results' }, { title: 'Where we’re going', sub: 'Q3 plan' } ] } },
@@ -1539,7 +1581,7 @@ OUTPUT RULES
 DECK STRUCTURE
 {
   "version": 1,
-  "meta": { "title": "<deck title>" },
+  "meta": { "title": "<deck title>", "org": "<organization mark or ''>" },
   "theme": ${themeNames} | "custom",
   "customTheme": { "bg":"#0B2318", "glow":"#17402C", "ink":"#F4F1E9", "acc":"#E3C567", "acc2":"#DE6B2C" }   (hex colors; ONLY when theme is "custom" — e.g. to match my brand colors if my outline mentions them),
   "settings": {
@@ -1551,10 +1593,13 @@ DECK STRUCTURE
     "autoHideChrome": true|false    (navigation fades out when idle),
     "autoPlay": true|false          (kiosk mode: slides advance automatically),
     "autoSeconds": 8                (autoplay: seconds per slide),
-    "autoLoop": true|false          (autoplay: loop back to the first slide)
+    "autoLoop": true|false,         (autoplay: loop back to the first slide)
+    "orgPos": "bottom" | "top"      (where the organization mark sits: bottom-left below all content, or top-left above it)
   },
   "slides": [ <slide objects in presentation order> ]
 }
+
+- "meta.org": optional organization mark — a short company name, disclaimer, or copyright line (max ~50 characters, e.g. "Acme Corp · Confidential") rendered small and faint on the left edge of every slide. Fill it in when my outline names the organization or asks for a footer/disclaimer; otherwise use "".
 
 SLIDE OBJECT
 { "id": "s1", "layout": "<layout name>", "parentId": null, "label": "<short name>", "notes": "<speaker notes>", "cue": "<tiny on-slide reminder or ''>", "content": { <layout-specific fields> } }
@@ -1563,6 +1608,7 @@ SLIDE OBJECT
 - "notes": private speaker notes, shown only to the presenter on demand. Put my supporting detail and talking points here instead of crowding the slide.
 - "duration": optional number — in autoplay mode, how many seconds this slide stays (omit to use settings.autoSeconds).
 - "hidden": optional true — a backup/appendix slide: kept in the deck but skipped during the presentation and in print. Use for detail slides only shown if asked.
+- "hideOrg": optional true — suppress the deck's organization mark on this slide. Set it on the hero/title and closing slides when they already state the organization name.
 - "cue": optional presenter nudge (max ~8 words, e.g. "Tell the onboarding anecdote"), rendered small and faint at the slide's bottom-right the whole time the slide is up. Unlike "notes" it stays on screen, so keep it terse and non-sensitive. Use "" when not needed. If my outline mentions an aside, story, demo, or "remember to...", that belongs in "cue".
 
 TEXT MARKUP (works in any content text field)
@@ -1597,7 +1643,7 @@ function aiPromptModal() {
       <ol style="margin:8px 0 0 20px;display:flex;flex-direction:column;gap:4px">
         <li><b style="color:#F2DD9B">Copy</b> the helper prompt below.</li>
         <li><b style="color:#F2DD9B">Paste</b> it into your AI of choice (Copilot, Claude, ChatGPT…) and add your outline at the end.</li>
-        <li><b style="color:#F2DD9B">Save</b> the JSON it replies with to a file, then use <b style="color:#F2DD9B">Import JSON</b> here and customize away.</li>
+        <li><b style="color:#F2DD9B">Save</b> the JSON it replies with to a file, then use <b style="color:#F2DD9B">JSON ▾ → Import JSON</b> here and customize away.</li>
       </ol>
     </div>
     <textarea class="jsonarea" id="aiprompttext" readonly spellcheck="false" style="height:34vh">${esc(prompt)}</textarea>
@@ -1863,7 +1909,7 @@ function renderPresent() {
     <div id="laser" style="display:none"></div>
   </div>`;
   initInk();
-  $('#curlayer').innerHTML = renderStage(deck.slides[cur], deck, '', { cueLift: deck.settings.showSkip });
+  $('#curlayer').innerHTML = renderStage(deck.slides[cur], deck, '', { cueLift: deck.settings.showSkip, orgLift: deck.settings.showCounter });
   hudStart = Date.now();
   autoRun = !!deck.settings.autoPlay;
   fitStage();
@@ -2032,7 +2078,7 @@ function goTo(n) {
   const tr = deck.settings.transition;
   const nl = document.createElement('div');
   nl.className = 'layer'; nl.id = 'curlayer';
-  nl.innerHTML = renderStage(deck.slides[cur], deck, '', { cueLift: deck.settings.showSkip });
+  nl.innerHTML = renderStage(deck.slides[cur], deck, '', { cueLift: deck.settings.showSkip, orgLift: deck.settings.showCounter });
   if (old) old.removeAttribute('id');
   if (tr === 'none') {
     if (old) old.remove();
@@ -2123,8 +2169,11 @@ window.addEventListener('hashchange', () => {
 
 /* ---------------- global events ---------------- */
 document.addEventListener('click', e => {
+  const mt = e.target.closest('[data-menu]');
+  $$('.tbmenu.open').forEach(m => { if (!mt || !m.contains(mt)) m.classList.remove('open'); });
+  if (mt) { mt.closest('.tbmenu').classList.toggle('open'); return; }
   const el = e.target.closest('[data-act]');
-  if (el) {
+  if (el && !el.closest(".sl-item")) {
     const a = el.dataset.act;
     if (a === 'present') switchMode('present');
     else if (a === 'print') switchMode('print');
@@ -2189,6 +2238,7 @@ document.addEventListener('mousedown', () => { if (mode === 'present') wakeChrom
 document.addEventListener('keydown', e => {
   if (mode !== 'present') {
     if (mode === 'print' && e.key === 'Escape') switchMode('design');
+    if (mode === 'design' && e.key === 'Escape') $$('.tbmenu.open').forEach(m => m.classList.remove('open'));
     if (mode === 'design' && (e.ctrlKey || e.metaKey)) {
       const key = e.key.toLowerCase();
       if (key === 'z' && !e.shiftKey) { e.preventDefault(); doUndo(); }
@@ -2238,7 +2288,7 @@ function sampleDeck() {
   const sec2 = S('section', { kicker:'Part Two', title:'Customer\n[[Feedback]]', subtitle:'What we heard this quarter', ghost:'02' }, { label:'Feedback splash' });
   const sec3 = S('section', { kicker:'Part Three', title:'The Q4 [[Roadmap]]', subtitle:'', ghost:'03' }, { label:'Roadmap splash' });
   const slides = [
-    S('hero', { kicker:'Company All-Hands', title:'Q3 Business\n[[Review & Roadmap]]', badge:'Questions welcome in the meeting chat at any time.' }, { label:'Intro' }),
+    S('hero', { kicker:'Company All-Hands', title:'Q3 Business\n[[Review & Roadmap]]', badge:'Questions welcome in the meeting chat at any time.' }, { label:'Intro', hideOrg:true }),
     S('topics', { title:'Today’s Topics', items:[
       { title:'Where the numbers landed', sub:'Q3 results at a glance' },
       { title:'What customers told us', sub:'' },
@@ -2272,6 +2322,7 @@ function sampleDeck() {
   const d = newDeck('Q3 All-Hands (Sample Deck)');
   d.slides = slides;
   d.settings.showCounter = true;
+  d.meta.org = 'Acme Corp · Confidential';
   return d;
 }
 
