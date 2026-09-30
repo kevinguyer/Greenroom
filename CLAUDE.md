@@ -35,7 +35,7 @@ Greenroom is a **single self-contained HTML file** (`greenroom.html`) containing
 - Escape all user content with `rich()` (markup + escaping) or `esc()` (plain).
 - Honor the `eyebrow` parameter (see `eyebrowWrap`) so section grouping works.
 
-**Adding a theme** = one entry in `THEMES` with the full `vars` set (`--ink`, `--ink-rgb`, `--acc`, `--acc-rgb`, `--accB`, `--acc2`, `--acc2-rgb`, `--acc2Soft`, `--deep`, `--card-rgb`, `--chromebg`, `--railbg`, `--panelbg`), `page`, `bg`, `ambient()`. For light themes set `--card-rgb` to the ink RGB (dark-tinted cards). Custom user themes are derived in `customThemeObj()` — extend it if you add vars.
+**Adding a theme** = one entry in `THEMES` with the full `vars` set (`--ink`, `--ink-rgb`, `--acc`, `--acc-rgb`, `--accB`, `--acc2`, `--acc2-rgb`, `--acc2Soft`, `--deep`, `--card-rgb`, `--chromebg`, `--railbg`, `--panelbg`), `page`, `bg`, `ambient(style)`. `ambient` must accept the deck's `settings.ambientStyle` (`'calm'` | `'particles'` | `'particlesSoft'` | `'aurora'`, listed in `AMBIENT_STYLES`) and pass it to `genAmbient()`, which dispatches to `genMotes()` / `genAurora()`; particle fields use the seeded PRNG so every render is identical. For light themes set `--card-rgb` to the ink RGB (dark-tinted cards). Custom user themes are derived in `customThemeObj()` — extend it if you add vars.
 
 ## Invariants and hard-won gotchas
 
