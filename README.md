@@ -2,7 +2,7 @@
 
 **A one-file slide studio.** Design a deck, present it full-screen, and carry the whole thing anywhere — designer, presenter, themes, and your saved decks all live in a single HTML file that runs straight from disk. No install, no server, no internet, no account.
 
-> Current version: **1.5.0** (shown next to the logo in the app)
+> Current version: **1.6.0** (shown next to the logo in the app)
 
 ## Quick start
 
@@ -15,7 +15,7 @@ A built-in guide opens on first launch and stays available under the **?** butto
 ## What's inside
 
 ### Design
-- **21 slide layouts** — hero, section splash, statement, topic grid, split + card, comparison, before / after, image, video, code window, bulleted list, do / don’t, big callout, quote, big stats, data bars, progress ring, timeline, process flow, people grid, and closing — chosen from a **visual picker** with live thumbnails. Picked wrong? *Layout → Change…* previews **your own content** poured into every other layout before you commit.
+- **27 slide layouts** — hero, section splash, statement, topic grid, split + card, comparison, before / after, image, video, code window, bulleted list, do / don’t, checklist, columns, feature cards, 2×2 matrix, big callout, quote, big stats, data bars, data table, funnel, progress ring, timeline, process flow, people grid, and closing — chosen from a **visual picker** with live thumbnails. Picked wrong? *Layout → Change…* previews **your own content** poured into every other layout before you commit.
 - **Rich text markup** in any field: `[[gold accent]]`, `{{orange accent}}`, `[link text](url)` (opens in a new tab), and line breaks.
 - **Sections & grouping** — child slides inherit their section's name as an eyebrow label and nest in the thumbnail rail.
 - **Slide sorter** (⊞) — the whole deck as a drag-to-reorder grid. **Ctrl+F** searches all text across the deck.
@@ -26,9 +26,10 @@ A built-in guide opens on first launch and stays available under the **?** butto
 Four built-in looks — **Emerald & Gold**, **Midnight Slate**, **Ember**, and the light **Boardroom Ivory** — plus a **custom theme builder**: pick five colors and a complete theme (gradients, cards, chrome, ambient particles) is derived and saved inside your deck.
 
 ### Present
-- Fixed 1920×1080 stage scaled to any window, entrance animations, ambient animated backgrounds, and slide transitions (fade / slide / zoom / none).
+- Fixed 1920×1080 stage scaled to any window, entrance animations, ambient animated backgrounds in four styles (**Calm**, lively and gentle **Particles**, **Aurora**), and slide transitions (fade / slide / zoom / none).
 - Navigation via dots or a **thumbnail rail**, auto-hiding chrome, optional slide counter and Skip-to-end.
 - **Presenter HUD** (`P`): elapsed timer, next-slide preview, and your notes — with target-length warning colors.
+- **Target-time progress bar**: an optional thin line along the bottom edge that fills toward the deck's target length, with a notch showing where the current slide sits so you can see at a glance whether you're ahead or behind. The clock starts when the show opens or on the first slide change. `H` shows or hides it during the show.
 - **Rehearsal mode** (`R`): records per-slide timings and shows a recap table.
 - **Laser pointer** (`L`), **draw on the slide** (`D`, `C` clears), **black screen** (`B`), **slide grid** (`G`), and **number + Enter** to jump. Press `?` during a show for the full shortcut list.
 - **Autoplay / kiosk mode**: seconds per slide (with per-slide overrides), optional loop — for lobby screens and self-running demos.

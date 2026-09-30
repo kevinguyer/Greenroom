@@ -39,6 +39,12 @@ input, textarea, select { font-family:inherit; }
 @keyframes ringIn { from { stroke-dashoffset:var(--ring-full); } }
 @keyframes drift { 0% { transform:translate(0,0); opacity:.25; } 50% { transform:translate(24px,-38px); opacity:.9; } 100% { transform:translate(0,0); opacity:.25; } }
 @keyframes breathe { 0%,100% { transform:scale(1); opacity:.5; } 50% { transform:scale(1.18); opacity:.85; } }
+@keyframes mote { 0% { top:106%; opacity:0; } 7% { opacity:1; } 90% { opacity:1; } 100% { top:-8%; opacity:0; } }
+@keyframes sway { 0%,100% { transform:translateX(0); } 50% { transform:translateX(var(--sw,50px)); } }
+@keyframes twinkle { 0%,100% { opacity:.25; transform:scale(.7); } 50% { opacity:1; transform:scale(1.15); } }
+@keyframes streak { 0% { transform:translate(0,0) rotate(-32deg); opacity:0; } 4% { opacity:.9; } 22% { transform:translate(-620px,390px) rotate(-32deg); opacity:0; } 100% { transform:translate(-620px,390px) rotate(-32deg); opacity:0; } }
+@keyframes aurora { 0% { transform:translate(-6%,-4%) rotate(-10deg) scale(1); } 33% { transform:translate(9%,6%) rotate(5deg) scale(1.18); } 66% { transform:translate(-3%,11%) rotate(13deg) scale(.94); } 100% { transform:translate(-6%,-4%) rotate(-10deg) scale(1); } }
+@keyframes auroraHue { 0%,100% { opacity:.55; } 50% { opacity:1; } }
 @keyframes nudge { 0%,100% { transform:translateX(0); } 50% { transform:translateX(14px); } }
 @keyframes inFromR { from { opacity:0; transform:translateX(90px); } to { opacity:1; transform:none; } }
 @keyframes inFromL { from { opacity:0; transform:translateX(-90px); } to { opacity:1; transform:none; } }
@@ -85,7 +91,7 @@ input, textarea, select { font-family:inherit; }
 .tbmenu-pop button:hover { background:rgba(227,197,103,.14); color:#F2DD9B; }
 .tbmenu-pop button small { margin-left:auto; padding-left:20px; font-size:11px; color:rgba(232,230,223,.4); }
 
-.main { display:grid; grid-template-columns:270px 1fr 330px; min-height:0; }
+.main { display:grid; grid-template-columns:270px 1fr 380px; min-height:0; }
 
 /* slide list */
 .slidelist { background:#0f1712; border-right:1px solid rgba(227,197,103,.12); overflow-y:auto; padding:10px; display:flex; flex-direction:column; gap:6px; }
@@ -142,6 +148,16 @@ input, textarea, select { font-family:inherit; }
 .colorrow { display:flex; align-items:center; justify-content:space-between; margin-bottom:7px; font-size:12.5px; color:rgba(232,230,223,.8); }
 .colorrow input[type=color] { width:52px; height:30px; padding:2px; background:rgba(255,255,255,.06); border:1px solid rgba(227,197,103,.25); border-radius:7px; cursor:pointer; }
 .sechead { font-family:Poppins; font-weight:700; font-size:13px; color:#E3C567; }
+/* collapsible groups in the Deck tab */
+.dgroup { border:1px solid rgba(227,197,103,.16); border-radius:10px; background:rgba(255,255,255,.02); }
+.dgroup summary { list-style:none; cursor:pointer; display:flex; align-items:center; gap:8px; padding:10px 12px; font-family:Poppins; font-weight:700; font-size:12.5px; color:#E3C567; user-select:none; border-radius:10px; }
+.dgroup summary::-webkit-details-marker { display:none; }
+.dgroup summary::before { content:'▸'; font-size:11px; color:rgba(227,197,103,.6); transition:transform .18s ease; }
+.dgroup[open] summary::before { transform:rotate(90deg); }
+.dgroup summary:hover { background:rgba(227,197,103,.06); }
+.dgroup summary em { flex:1; min-width:0; text-align:right; font-style:normal; font-family:Figtree, sans-serif; font-weight:500; font-size:11px; color:rgba(232,230,223,.45); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.dgroup[open] summary em { display:none; }
+.dg-body { display:flex; flex-direction:column; gap:12px; padding:4px 12px 13px; border-top:1px solid rgba(227,197,103,.1); }
 
 /* modals */
 .modalback { position:fixed; inset:0; background:rgba(4,8,6,.72); backdrop-filter:blur(4px); z-index:100; display:grid; place-items:center; }
@@ -214,7 +230,13 @@ input, textarea, select { font-family:inherit; }
 
 /* ============ present mode ============ */
 #present { position:fixed; inset:0; overflow:hidden; }
-.amb { position:absolute; inset:0; pointer-events:none; }
+.amb { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+/* target-time progress bar: thin line on the bottom edge; fill = elapsed / target, notch = current slide position */
+.tprog { position:absolute; left:0; right:0; bottom:0; height:4px; z-index:29; pointer-events:none; background:rgba(var(--ink-rgb),.08); }
+.tprog i { position:absolute; left:0; top:0; bottom:0; width:0; background:linear-gradient(90deg,var(--acc),var(--accB)); opacity:.6; border-radius:0 3px 3px 0; transition:width 1s linear; }
+.tprog.warn i { background:var(--acc2); opacity:.8; }
+.tprog.over i { background:#ff5a4a; opacity:.9; animation:breathe 1.8s ease-in-out infinite; transform-origin:left; }
+.tprog b { position:absolute; top:-3px; width:2px; height:10px; margin-left:-1px; background:rgba(var(--ink-rgb),.55); border-radius:1px; transition:left .5s ease; }
 .stagepos { position:absolute; left:50%; top:50%; width:1920px; height:1080px; transform-origin:center; }
 .layer { position:absolute; inset:0; }
 .chrome { position:absolute; inset:0; pointer-events:none; z-index:30; transition:opacity .5s ease; }
@@ -245,6 +267,7 @@ input, textarea, select { font-family:inherit; }
 .hud { position:absolute; bottom:110px; width:350px; z-index:45; pointer-events:auto; background:rgba(8,12,10,.93); border:1px solid rgba(227,197,103,.32); border-radius:14px; padding:14px; backdrop-filter:blur(12px); display:flex; flex-direction:column; gap:11px; font-family:Figtree, sans-serif; color:#e8e6df; box-shadow:0 24px 60px -20px rgba(0,0,0,.7); }
 .hud-top { display:flex; align-items:center; gap:10px; }
 .hud-timer { font:700 22px/1 ui-monospace, Consolas, monospace; color:#F2DD9B; letter-spacing:.04em; }
+.hud-target { font:600 13px/1 ui-monospace, Consolas, monospace; color:rgba(232,230,223,.45); letter-spacing:.04em; }
 .hud-reset { cursor:pointer; font-size:16px; color:rgba(232,230,223,.55); padding:2px 6px; border-radius:6px; }
 .hud-reset:hover { background:rgba(227,197,103,.2); color:#F2DD9B; }
 .hud-lbl { flex:1; text-align:right; font-family:Poppins; font-weight:600; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:rgba(232,230,223,.6); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -301,7 +324,7 @@ input, textarea, select { font-family:inherit; }
 
 <script>
 'use strict';
-const APP_VERSION = '1.5.0';
+const APP_VERSION = '1.6.0';
 /* A published player file carries its deck in a #baked-deck tag (in <head>, so it's parsed before this script) */
 const BAKED = document.getElementById('baked-deck');
 const PLAYER = !!BAKED;
@@ -337,10 +360,50 @@ const debounce = (fn, ms) => { let h; return (...a) => { clearTimeout(h); h = se
 const fmtDate = ts => new Date(ts).toLocaleString();
 
 /* ---------------- themes ---------------- */
-function genAmbient(aRgb, bRgb, inkRgb, orbA, orbB, dotGlow) {
+/* seeded PRNG: particle fields must be identical on every render (preview, present, player export) */
+function seeded(seed) { let s = (seed >>> 0) || 1; return () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296; }
+/* 'particles': dozens of rising, swaying, twinkling motes plus the occasional streak.
+   soft=true is the low-motion sibling: fewer motes, roughly half the speed, gentler sway, no streaks */
+function genMotes(aRgb, bRgb, inkRgb, dotGlow, soft) {
+  const r = seeded(20240917), lvl = dotGlow >= .45 ? 1 : .75;
+  const count = soft ? 28 : 46;
+  let out = '';
+  for (let i = 0; i < count; i++) {
+    const rgb = i % 7 === 6 ? inkRgb : i % 3 === 2 ? bRgb : aRgb;
+    const size = (3 + r() * 7).toFixed(1), left = (r() * 100).toFixed(2);
+    const rise = (soft ? 34 + r() * 40 : 16 + r() * 22).toFixed(1), off = (-r() * (soft ? 70 : 38)).toFixed(1);
+    const sw = Math.round((r() < .5 ? -1 : 1) * (soft ? 12 + r() * 30 : 26 + r() * 70)), swd = (soft ? 9 + r() * 9 : 5 + r() * 7).toFixed(1);
+    const tw = (soft ? 4 + r() * 6 : 2 + r() * 4).toFixed(1), twOff = (-r() * 4).toFixed(1);
+    const alpha = ((.5 + r() * .45) * lvl).toFixed(2), glow = size > 6 ? `box-shadow:0 0 ${Math.round(size * 2.4)}px ${Math.round(size * .7)}px rgba(${rgb},${(dotGlow * .7).toFixed(2)});` : '';
+    out += `<div style="position:absolute;left:${left}%;top:106%;--sw:${sw}px;animation:mote ${rise}s linear infinite ${off}s, sway ${swd}s ease-in-out infinite ${off}s"><div style="width:${size}px;height:${size}px;border-radius:50%;background:rgba(${rgb},${alpha});${glow}animation:twinkle ${tw}s ease-in-out infinite ${twOff}s"></div></div>`;
+  }
+  if (soft) return out;
+  /* three shooting streaks on long, offset cycles */
+  [[72, 8, 11, 0], [88, 30, 14, 5], [58, 2, 17, 9]].forEach(([l, t, d, off]) => {
+    out += `<div style="position:absolute;left:${l}%;top:${t}%;width:190px;height:2px;border-radius:2px;background:linear-gradient(90deg,rgba(${aRgb},0),rgba(${aRgb},${(.9 * lvl).toFixed(2)}));transform-origin:right;animation:streak ${d}s ease-out infinite ${off}s"></div>`;
+  });
+  return out;
+}
+/* 'aurora': three big blurred color bands sweeping slowly across the stage */
+function genAurora(aRgb, bRgb, inkRgb, orbA, orbB) {
+  const a = Math.min(.5, orbA * 2.2).toFixed(2), b = Math.min(.5, orbB * 2.2).toFixed(2);
   return `
+  <div style="position:absolute;left:-10%;top:-20%;width:120%;height:60%;border-radius:50%;filter:blur(90px);background:linear-gradient(100deg,rgba(${aRgb},${a}) 0%,rgba(${bRgb},${b}) 55%,rgba(${aRgb},0) 100%);transform-origin:center;animation:aurora 26s ease-in-out infinite, auroraHue 13s ease-in-out infinite"></div>
+  <div style="position:absolute;left:-15%;top:35%;width:110%;height:55%;border-radius:50%;filter:blur(110px);background:linear-gradient(80deg,rgba(${bRgb},${b}) 0%,rgba(${aRgb},${a}) 60%,rgba(${bRgb},0) 100%);transform-origin:center;animation:aurora 34s ease-in-out infinite -12s, auroraHue 17s ease-in-out infinite -6s"></div>
+  <div style="position:absolute;left:20%;top:10%;width:90%;height:70%;border-radius:50%;filter:blur(120px);background:radial-gradient(ellipse at 40% 50%,rgba(${aRgb},${(a * .8).toFixed(2)}) 0%,rgba(${aRgb},0) 65%);transform-origin:center;animation:aurora 42s ease-in-out infinite -20s reverse"></div>
+  <div style="position:absolute;left:24%;top:22%;width:5px;height:5px;border-radius:50%;background:rgba(${inkRgb},.6);animation:drift 21s ease-in-out infinite"></div>
+  <div style="position:absolute;left:70%;top:66%;width:6px;height:6px;border-radius:50%;background:rgba(${aRgb},.8);box-shadow:0 0 16px 4px rgba(${aRgb},.35);animation:drift 27s ease-in-out infinite 5s"></div>
+  <div style="position:absolute;left:86%;top:18%;width:4px;height:4px;border-radius:50%;background:rgba(${bRgb},.8);animation:drift 24s ease-in-out infinite 2s"></div>`;
+}
+/* style: 'calm' (default: two breathing orbs, six drifting dots) · 'particles' · 'particlesSoft' · 'aurora' */
+function genAmbient(aRgb, bRgb, inkRgb, orbA, orbB, dotGlow, style) {
+  if (style === 'aurora') return genAurora(aRgb, bRgb, inkRgb, orbA, orbB);
+  const orbs = `
   <div style="position:absolute;width:1100px;height:1100px;left:-260px;top:-380px;border-radius:50%;background:radial-gradient(circle, rgba(${aRgb},${orbA}) 0%, rgba(${aRgb},0) 62%);animation:breathe 14s ease-in-out infinite"></div>
-  <div style="position:absolute;width:900px;height:900px;right:-240px;bottom:-320px;border-radius:50%;background:radial-gradient(circle, rgba(${bRgb},${orbB}) 0%, rgba(${bRgb},0) 60%);animation:breathe 18s ease-in-out infinite 3s"></div>
+  <div style="position:absolute;width:900px;height:900px;right:-240px;bottom:-320px;border-radius:50%;background:radial-gradient(circle, rgba(${bRgb},${orbB}) 0%, rgba(${bRgb},0) 60%);animation:breathe 18s ease-in-out infinite 3s"></div>`;
+  if (style === 'particles') return orbs + genMotes(aRgb, bRgb, inkRgb, dotGlow, false);
+  if (style === 'particlesSoft') return orbs + genMotes(aRgb, bRgb, inkRgb, dotGlow, true);
+  return orbs + `
   <div style="position:absolute;left:64%;top:13%;width:7px;height:7px;border-radius:50%;background:rgba(${aRgb},.9);box-shadow:0 0 16px 4px rgba(${aRgb},${dotGlow});animation:drift 17s ease-in-out infinite"></div>
   <div style="position:absolute;left:47%;top:29%;width:4px;height:4px;border-radius:50%;background:rgba(${aRgb},.7);animation:drift 23s ease-in-out infinite 2s"></div>
   <div style="position:absolute;left:92%;top:40%;width:6px;height:6px;border-radius:50%;background:rgba(${bRgb},.85);box-shadow:0 0 14px 3px rgba(${bRgb},${dotGlow});animation:drift 21s ease-in-out infinite 1s"></div>
@@ -360,7 +423,7 @@ const THEMES = {
     },
     page: '#071A12',
     bg: 'radial-gradient(120% 100% at 18% 8%, #17402C 0%, #0B2318 42%, #061410 100%)',
-    ambient() { return genAmbient('227,197,103', '222,107,44', '244,241,233', .13, .12, .5); }
+    ambient(style) { return genAmbient('227,197,103', '222,107,44', '244,241,233', .13, .12, .5, style); }
   },
   midnight: {
     name: 'Midnight Slate',
@@ -373,7 +436,7 @@ const THEMES = {
     },
     page: '#0B0F14',
     bg: 'radial-gradient(120% 100% at 18% 8%, #1B2735 0%, #10161F 45%, #090D12 100%)',
-    ambient() { return genAmbient('95,180,232', '232,135,95', '237,241,245', .11, .09, .45); }
+    ambient(style) { return genAmbient('95,180,232', '232,135,95', '237,241,245', .11, .09, .45, style); }
   },
   ember: {
     name: 'Ember',
@@ -386,7 +449,7 @@ const THEMES = {
     },
     page: '#0D0705',
     bg: 'radial-gradient(120% 100% at 20% 10%, #2A130B 0%, #170A06 45%, #0B0503 100%)',
-    ambient() { return genAmbient('245,155,73', '232,93,74', '245,237,230', .12, .11, .5); }
+    ambient(style) { return genAmbient('245,155,73', '232,93,74', '245,237,230', .12, .11, .5, style); }
   },
   boardroom: {
     name: 'Boardroom Ivory',
@@ -399,7 +462,7 @@ const THEMES = {
     },
     page: '#F6F2E9',
     bg: 'radial-gradient(120% 100% at 18% 8%, #FDFBF5 0%, #F3EDE0 45%, #E9E1CE 100%)',
-    ambient() { return genAmbient('140,106,47', '180,85,45', '35,42,51', .09, .07, .3); }
+    ambient(style) { return genAmbient('140,106,47', '180,85,45', '35,42,51', .09, .07, .3, style); }
   }
 };
 /* custom theme: derive a full theme from five user colors */
@@ -425,9 +488,15 @@ function customThemeObj(ct) {
     },
     page: ct.bg,
     bg: `radial-gradient(120% 100% at 18% 8%, ${ct.glow} 0%, ${ct.bg} 45%, ${mixHex(ct.bg,'#000000', isLight ? .08 : .5)} 100%)`,
-    ambient() { return genAmbient(rgbStr(ct.acc), rgbStr(ct.acc2), rgbStr(ct.ink), isLight?.09:.12, isLight?.07:.11, isLight?.3:.5); }
+    ambient(style) { return genAmbient(rgbStr(ct.acc), rgbStr(ct.acc2), rgbStr(ct.ink), isLight?.09:.12, isLight?.07:.11, isLight?.3:.5, style); }
   };
 }
+const AMBIENT_STYLES = [
+  ['calm', 'Calm — soft orbs and a few drifting dots'],
+  ['particles', 'Particles (lively) — dozens of rising, twinkling motes and streaks'],
+  ['particlesSoft', 'Particles (gentle) — fewer, slower motes'],
+  ['aurora', 'Aurora — slow sweeping color bands']
+];
 const theme = d => d.theme === 'custom'
   ? customThemeObj(Object.assign({}, DEFAULT_CUSTOM, d.customTheme || {}))
   : (THEMES[d.theme] || THEMES.emerald);
@@ -914,6 +983,155 @@ const LAYOUTS = {
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:50px;margin-top:66px;align-items:start">${col(c.doHead, c.dos, true, .2)}${col(c.dontHead, c.donts, false, .35)}</div>`;
       return ey ? eyebrowWrap(ey, inner) : `<div style="position:absolute;inset:0;padding:0 150px;display:flex;flex-direction:column;justify-content:center">${inner}</div>`;
     }
+  },
+  columns: {
+    name:'Columns', icon:'⫼',
+    desc:'Two to four side-by-side columns, each with a heading and body — pillars, options, workstreams.',
+    fields:[ FA('title','Heading', RICH_HINT),
+      FL('items','Columns', [ F('head','Column heading'), FA('body','Body text', RICH_HINT, 3), FS('tone','Accent', [['gold','Gold'],['orange','Orange'],['ink','Neutral']]) ], 4, 'Column') ],
+    defaults:{ title:'Three [[pillars]]', items:[ {head:'People', body:'Hire slower, onboard faster, keep the bar high.', tone:'gold'}, {head:'Product', body:'Fewer bets, finished properly.', tone:'gold'}, {head:'Process', body:'Six-week cycles with a real cool-down.', tone:'orange'} ] },
+    render(c, ey) {
+      const items = c.items || [], n = Math.max(1, items.length);
+      const wide = n <= 2, hs = wide ? 52 : n === 3 ? 44 : 38, bs = wide ? 36 : n === 3 ? 31 : 27;
+      const cols = items.map((it, i) => {
+        const col = it.tone === 'orange' ? 'var(--acc2)' : it.tone === 'ink' ? 'rgba(var(--ink-rgb),.6)' : 'var(--acc)';
+        return `<div style="display:flex;flex-direction:column;background:rgba(var(--card-rgb),.035);border:1px solid rgba(var(--acc-rgb),.16);border-radius:24px;padding:48px 44px;${an('rise',.8,.25+i*.13)}">
+          <div style="height:6px;width:84px;border-radius:4px;background:${col};transform-origin:left;${an('growX',.8,.45+i*.13)}"></div>
+          <div class="fp" style="font-weight:700;font-size:${hs}px;line-height:1.15;margin-top:30px;color:${it.tone === 'ink' ? 'var(--ink)' : col}">${rich(it.head)}</div>
+          <div style="font-size:${bs}px;line-height:1.45;color:rgba(var(--ink-rgb),.78);margin-top:22px;text-wrap:pretty">${rich(it.body)}</div>
+        </div>`;
+      }).join('');
+      const inner = `<div class="fp" style="font-weight:800;font-size:104px;letter-spacing:-.025em;${an('rise',.8)}">${rich(c.title)}</div>
+        <div style="display:grid;grid-template-columns:repeat(${n},1fr);gap:${wide ? 48 : 34}px;margin-top:70px;align-items:stretch">${cols}</div>`;
+      return ey ? eyebrowWrap(ey, inner) : `<div style="position:absolute;inset:0;padding:0 150px;display:flex;flex-direction:column;justify-content:center">${inner}</div>`;
+    }
+  },
+
+  table: {
+    name:'Data Table', icon:'▦',
+    desc:'A clean table — header row plus up to 8 rows. Separate cells with a vertical bar (|). Numbers right-align automatically.',
+    fields:[ FA('title','Heading', RICH_HINT), F('columns','Column headers (separate with |)', 'e.g. Region | Q2 | Q3 | Change'),
+      FL('rows','Rows', [ F('cells','Cells (separate with |)', RICH_HINT), FC('hl','Highlight this row') ], 8, 'Row') ],
+    defaults:{ title:'Results by [[region]]', columns:'Region | Q2 | Q3 | Change', rows:[ {cells:'North America | $4.1M | $4.8M | +17%'}, {cells:'Europe | $2.6M | $2.9M | +11%'}, {cells:'Asia Pacific | $1.2M | $1.7M | {{+41%}}', hl:true}, {cells:'Total | $7.9M | $9.4M | +19%'} ] },
+    render(c, ey) {
+      const split = s => String(s == null ? '' : s).split('|').map(x => x.trim());
+      const heads = split(c.columns), rows = c.rows || [], ncol = Math.max(1, heads.length, ...rows.map(r => split(r.cells).length));
+      const numeric = s => /^[\s$€£¥%0-9.,+\-–—×x:/()]*\d[\s$€£¥%0-9.,+\-–—×x:/()]*$/.test(plain(s));
+      const many = rows.length > 5, fs = many ? 28 : ncol > 4 ? 30 : 34, pad = many ? '16px 26px' : '22px 30px';
+      const th = heads.concat(Array(ncol).fill('')).slice(0, ncol).map((h, j) => `<th style="text-align:${j > 0 && numeric(h) ? 'right' : 'left'};padding:${pad};font-family:Poppins;font-weight:600;font-size:22px;letter-spacing:.2em;text-transform:uppercase;color:rgba(var(--acc-rgb),.9);border-bottom:2px solid rgba(var(--acc-rgb),.4)">${rich(h)}</th>`).join('');
+      const tr = rows.map((r, i) => {
+        const cells = split(r.cells).concat(Array(ncol).fill('')).slice(0, ncol);
+        return `<tr style="${r.hl ? 'background:rgba(var(--acc-rgb),.1);' : ''}${an('fade',.6,.3+i*.08)}">${cells.map((cell, j) => `<td style="padding:${pad};font-size:${fs}px;line-height:1.3;${j === 0 ? 'font-weight:600;' : ''}text-align:${j > 0 && numeric(cell) ? 'right' : 'left'};color:rgba(var(--ink-rgb),${r.hl ? '.95' : '.85'});border-bottom:1px solid rgba(var(--ink-rgb),.12)">${rich(cell)}</td>`).join('')}</tr>`;
+      }).join('');
+      const inner = `<div class="fp" style="font-weight:800;font-size:104px;letter-spacing:-.025em;${an('rise',.8)}">${rich(c.title)}</div>
+        <table style="width:100%;border-collapse:collapse;margin-top:60px;${an('rise',.8,.2)}"><thead><tr>${th}</tr></thead><tbody>${tr}</tbody></table>`;
+      return ey ? eyebrowWrap(ey, inner) : `<div style="position:absolute;inset:0;padding:0 150px;display:flex;flex-direction:column;justify-content:center">${inner}</div>`;
+    }
+  },
+
+  matrix: {
+    name:'2×2 Matrix', icon:'⊞',
+    desc:'Four quadrants on two labelled axes — prioritization, positioning, risk maps. One quadrant can be highlighted.',
+    fields:[ FA('title','Heading', RICH_HINT), F('xAxis','Horizontal axis (e.g. Effort →)'), F('yAxis','Vertical axis (e.g. Impact ↑)'),
+      F('tlHead','Top-left heading'), FA('tlBody','Top-left text', RICH_HINT, 2), F('trHead','Top-right heading'), FA('trBody','Top-right text', RICH_HINT, 2),
+      F('blHead','Bottom-left heading'), FA('blBody','Bottom-left text', RICH_HINT, 2), F('brHead','Bottom-right heading'), FA('brBody','Bottom-right text', RICH_HINT, 2),
+      FS('focus','Highlighted quadrant', [['tl','Top left'],['tr','Top right'],['bl','Bottom left'],['br','Bottom right'],['none','None']]) ],
+    defaults:{ title:'Where to [[focus]]', xAxis:'Effort →', yAxis:'Impact →', tlHead:'Quick wins', tlBody:'Do these first.', trHead:'Big bets', trBody:'Plan and staff properly.', blHead:'Fill-ins', blBody:'Only when idle.', brHead:'Money pits', brBody:'Say no.', focus:'tl' },
+    render(c, ey) {
+      const q = (k, i) => {
+        const hot = c.focus === k;
+        return `<div style="display:flex;flex-direction:column;justify-content:center;border-radius:22px;padding:38px 42px;background:${hot ? 'rgba(var(--acc-rgb),.14)' : 'rgba(var(--card-rgb),.035)'};border:${hot ? '2px solid rgba(var(--acc-rgb),.7)' : '1px solid rgba(var(--ink-rgb),.14)'};${an('zoomIn',.7,.3+i*.1)}">
+          <div class="fp" style="font-weight:700;font-size:40px;color:${hot ? 'var(--acc)' : 'var(--ink)'}">${rich(c[k + 'Head'])}</div>
+          <div style="font-size:28px;line-height:1.4;color:rgba(var(--ink-rgb),.72);margin-top:12px;text-wrap:pretty">${rich(c[k + 'Body'])}</div>
+        </div>`;
+      };
+      const inner = `<div class="fp" style="font-weight:800;font-size:96px;letter-spacing:-.025em;${an('rise',.8)}">${rich(c.title)}</div>
+        <div style="display:grid;grid-template-columns:70px 1fr;grid-template-rows:1fr 60px;gap:0 18px;margin-top:46px;height:${ey ? 660 : 700}px">
+          <div style="display:flex;align-items:center;justify-content:center"><div class="fp" style="transform:rotate(-90deg);white-space:nowrap;font-weight:600;font-size:24px;letter-spacing:.26em;text-transform:uppercase;color:rgba(var(--acc-rgb),.85);${an('fade',.8,.5)}">${rich(c.yAxis)}</div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:22px">${q('tl', 0)}${q('tr', 1)}${q('bl', 2)}${q('br', 3)}</div>
+          <div></div>
+          <div class="fp" style="display:flex;align-items:center;justify-content:center;font-weight:600;font-size:24px;letter-spacing:.26em;text-transform:uppercase;color:rgba(var(--acc-rgb),.85);${an('fade',.8,.5)}">${rich(c.xAxis)}</div>
+        </div>`;
+      return ey ? eyebrowWrap(ey, inner) : `<div style="position:absolute;inset:0;padding:0 150px;display:flex;flex-direction:column;justify-content:center">${inner}</div>`;
+    }
+  },
+
+  funnel: {
+    name:'Funnel', icon:'▽',
+    desc:'Stacked, narrowing bars from top to bottom — pipelines, conversion, sign-up flows. 3–6 stages, each with a label and value.',
+    fields:[ FA('title','Heading', RICH_HINT),
+      FL('items','Stages', [ F('label','Stage'), F('value','Shown value (e.g. 12,400 or 38%)'), F('note','Side note (optional, e.g. drop-off)') ], 6, 'Stage') ],
+    defaults:{ title:'From visit to [[customer]]', items:[ {label:'Visitors', value:'48,000'}, {label:'Sign-ups', value:'9,600', note:'20%'}, {label:'Activated', value:'4,100', note:'43%'}, {label:'Paying', value:'1,150', note:'28%'} ] },
+    render(c, ey) {
+      const items = c.items || [], n = Math.max(2, items.length);
+      const h = n > 4 ? 78 : 96, fs = n > 4 ? 30 : 36;
+      const rows = items.map((it, i) => {
+        const w = 100 - i * (58 / (n - 1)), op = (1 - i * (.55 / (n - 1))).toFixed(2);
+        return `<div style="display:flex;align-items:center;gap:36px;${an('rise',.7,.2+i*.12)}">
+          <div class="fp" style="flex:none;width:360px;text-align:right;font-weight:700;font-size:${fs}px;line-height:1.15;color:rgba(var(--ink-rgb),.88)">${rich(it.label)}</div>
+          <div style="flex:1;display:flex;justify-content:center">
+            <div style="width:${w.toFixed(1)}%;height:${h}px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:linear-gradient(90deg,var(--acc),var(--acc2));opacity:${op};transform-origin:center;${an('growX',.9,.35+i*.12)}">
+              <div class="fp" style="font-weight:800;font-size:${fs+2}px;color:var(--deep);letter-spacing:-.01em">${rich(it.value)}</div></div></div>
+          <div style="flex:none;width:200px;font-size:${fs-6}px;color:rgba(var(--acc2-rgb),.9);font-weight:600">${it.note ? rich(it.note) : ''}</div>
+        </div>`;
+      }).join('');
+      const inner = `<div class="fp" style="font-weight:800;font-size:104px;letter-spacing:-.025em;${an('rise',.8)}">${rich(c.title)}</div>
+        <div style="display:flex;flex-direction:column;gap:${n > 4 ? 18 : 26}px;margin-top:64px">${rows}</div>`;
+      return ey ? eyebrowWrap(ey, inner) : `<div style="position:absolute;inset:0;padding:0 150px;display:flex;flex-direction:column;justify-content:center">${inner}</div>`;
+    }
+  },
+
+  checklist: {
+    name:'Checklist', icon:'☑',
+    desc:'A list with done / in-progress / open states and a completion count — launch readiness, status updates, exit criteria.',
+    fields:[ FA('title','Heading', RICH_HINT),
+      FL('items','Items', [ FA('text','Text', RICH_HINT, 2), FS('state','State', [['done','Done'],['now','In progress'],['todo','Open']]) ], 7, 'Item') ],
+    defaults:{ title:'Launch [[readiness]]', items:[ {text:'Security review signed off', state:'done'}, {text:'Docs and release notes published', state:'done'}, {text:'Load test at 3× expected traffic', state:'now'}, {text:'Support team briefed', state:'todo'} ] },
+    render(c, ey) {
+      const items = c.items || [], done = items.filter(it => it.state === 'done').length;
+      const many = items.length > 5, fs = many ? 34 : 40, gap = many ? 22 : 32;
+      const rows = items.map((it, i) => {
+        const mark = it.state === 'done'
+          ? `<div class="fp" style="width:56px;height:56px;border-radius:50%;display:grid;place-items:center;background:var(--acc);color:var(--deep);font-weight:800;font-size:30px;${an('zoomIn',.5,.35+i*.1)}">✓</div>`
+          : it.state === 'now'
+            ? `<div style="width:56px;height:56px;border-radius:50%;border:4px solid var(--acc2);display:grid;place-items:center"><div style="width:20px;height:20px;border-radius:50%;background:var(--acc2);box-shadow:0 0 16px 4px rgba(var(--acc2-rgb),.5);animation:breathe 2s ease-in-out infinite"></div></div>`
+            : `<div style="width:56px;height:56px;border-radius:50%;border:4px solid rgba(var(--ink-rgb),.28)"></div>`;
+        return `<div style="display:flex;align-items:center;gap:32px;${an('rise',.7,.2+i*.1)}">
+          <div style="flex:none">${mark}</div>
+          <div style="font-size:${fs}px;line-height:1.3;font-weight:${it.state === 'now' ? 600 : 500};color:rgba(var(--ink-rgb),${it.state === 'done' ? '.6' : it.state === 'now' ? '.95' : '.85'});text-wrap:pretty">${rich(it.text)}</div>
+          ${it.state === 'now' ? `<div class="fp" style="flex:none;font-weight:600;font-size:18px;letter-spacing:.2em;text-transform:uppercase;color:var(--acc2);border:1px solid rgba(var(--acc2-rgb),.5);border-radius:999px;padding:8px 16px">In progress</div>` : ''}
+        </div>`;
+      }).join('');
+      const inner = `<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:40px">
+          <div class="fp" style="font-weight:800;font-size:104px;letter-spacing:-.025em;${an('rise',.8)}">${rich(c.title)}</div>
+          <div class="fp" style="flex:none;font-weight:700;font-size:30px;color:var(--acc);border:1px solid rgba(var(--acc-rgb),.4);border-radius:999px;padding:14px 30px;margin-bottom:18px;${an('fade',.8,.5)}">${done} / ${items.length} done</div>
+        </div>
+        <div style="height:6px;width:220px;background:linear-gradient(90deg,var(--acc),var(--acc2));margin-top:26px;transform-origin:left;${an('growX',.8,.2)}"></div>
+        <div style="display:flex;flex-direction:column;gap:${gap}px;margin-top:${many ? 48 : 64}px">${rows}</div>`;
+      return ey ? eyebrowWrap(ey, inner) : `<div style="position:absolute;inset:0;padding:0 150px;display:flex;flex-direction:column;justify-content:center">${inner}</div>`;
+    }
+  },
+
+  features: {
+    name:'Feature Cards', icon:'✦',
+    desc:'A grid of cards, each with an emoji or short symbol, a title, and a line of text — capabilities, benefits, principles.',
+    fields:[ FA('title','Heading', RICH_HINT),
+      FL('items','Cards', [ F('icon','Icon (an emoji or 1–2 characters)'), F('title','Card title'), FA('body','Text', RICH_HINT, 2) ], 6, 'Card') ],
+    defaults:{ title:'What’s [[new]]', items:[ {icon:'⚡', title:'Faster sync', body:'Changes land in under a second.'}, {icon:'🔒', title:'SSO everywhere', body:'One login across every app.'}, {icon:'📊', title:'Live dashboards', body:'No more Monday exports.'} ] },
+    render(c, ey) {
+      const items = c.items || [], n = items.length;
+      const cols = n <= 2 ? Math.max(1, n) : n === 4 ? 2 : 3, rows = Math.ceil(n / cols);
+      const tall = rows <= 1, ts = tall ? 42 : 34, bs = tall ? 30 : 26, is = tall ? 64 : 48, box = tall ? 116 : 88;
+      const cards = items.map((it, i) => `
+        <div style="display:flex;flex-direction:column;background:rgba(var(--card-rgb),.04);border:1px solid rgba(var(--acc-rgb),.18);border-radius:24px;padding:${tall ? 46 : 34}px;${an('rise',.8,.25+i*.1)}">
+          <div style="width:${box}px;height:${box}px;border-radius:${Math.round(box*.26)}px;display:grid;place-items:center;font-size:${is}px;line-height:1;background:rgba(var(--acc-rgb),.14);border:1px solid rgba(var(--acc-rgb),.3);${an('zoomIn',.6,.4+i*.1)}">${esc(it.icon)}</div>
+          <div class="fp" style="font-weight:700;font-size:${ts}px;line-height:1.15;margin-top:${tall ? 30 : 22}px">${rich(it.title)}</div>
+          <div style="font-size:${bs}px;line-height:1.4;color:rgba(var(--ink-rgb),.7);margin-top:12px;text-wrap:pretty">${rich(it.body)}</div>
+        </div>`).join('');
+      const inner = `<div class="fp" style="font-weight:800;font-size:104px;letter-spacing:-.025em;${an('rise',.8)}">${rich(c.title)}</div>
+        <div style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:${tall ? 36 : 26}px;margin-top:${tall ? 70 : 54}px">${cards}</div>`;
+      return ey ? eyebrowWrap(ey, inner) : `<div style="position:absolute;inset:0;padding:0 150px;display:flex;flex-direction:column;justify-content:center">${inner}</div>`;
+    }
   }
 };
 
@@ -968,7 +1186,7 @@ function newDeck(title) {
     id: uid(), version: 1,
     meta: { title: title || 'Untitled Deck', created: Date.now(), org: '' },
     theme: 'emerald',
-    settings: { nav:'dots', showSkip:true, showCounter:false, transition:'fade', ambient:true, autoHideChrome:true, autoPlay:false, autoSeconds:8, autoLoop:false, targetMinutes:'', orgPos:'bottom' },
+    settings: { nav:'dots', showSkip:true, showCounter:false, transition:'fade', ambient:true, ambientStyle:'calm', autoHideChrome:true, autoPlay:false, autoSeconds:8, autoLoop:false, targetMinutes:'', showProgress:false, clockStart:'open', orgPos:'bottom' },
     slides: [ newSlide('hero'), newSlide('section'), newSlide('topics'), newSlide('closing') ]
   };
 }
@@ -982,8 +1200,11 @@ function validateDeck(d) {
   if (typeof d.meta.org !== 'string') d.meta.org = '';
   d.theme = (THEMES[d.theme] || d.theme === 'custom') ? d.theme : 'emerald';
   if (d.theme === 'custom') d.customTheme = Object.assign({}, DEFAULT_CUSTOM, d.customTheme || {});
-  d.settings = Object.assign({ nav:'dots', showSkip:true, showCounter:false, transition:'fade', ambient:true, autoHideChrome:true, autoPlay:false, autoSeconds:8, autoLoop:false, targetMinutes:'', orgPos:'bottom' }, d.settings);
+  d.settings = Object.assign({ nav:'dots', showSkip:true, showCounter:false, transition:'fade', ambient:true, ambientStyle:'calm', autoHideChrome:true, autoPlay:false, autoSeconds:8, autoLoop:false, targetMinutes:'', showProgress:false, clockStart:'open', orgPos:'bottom' }, d.settings);
   if (d.settings.orgPos !== 'top') d.settings.orgPos = 'bottom';
+  if (!AMBIENT_STYLES.some(([k]) => k === d.settings.ambientStyle)) d.settings.ambientStyle = 'calm';
+  if (d.settings.clockStart !== 'advance') d.settings.clockStart = 'open';
+  d.settings.showProgress = !!d.settings.showProgress;
   d.slides.forEach((s, i) => {
     if (!LAYOUTS[s.layout]) throw new Error(`Slide ${i+1}: unknown layout "${s.layout}".`);
     s.id = s.id || uid();
@@ -1345,10 +1566,22 @@ function bindSlideProps(body, s) {
   }));
 }
 
-function deckSettingsHTML() {
+/* Deck tab: settings grouped into collapsible sections; open/closed state is remembered per browser */
+function deckGroupState() { try { return JSON.parse(localStorage.getItem('gr-dgroups')) || { look:true }; } catch (e) { return { look:true }; } }
+function deckGroupSummary(g) {
   const st = deck.settings;
+  if (g === 'look') return theme(deck).name + (st.ambient ? ' · ' + (AMBIENT_STYLES.find(([k]) => k === st.ambientStyle) || AMBIENT_STYLES[0])[1].split(' — ')[0] : ' · No ambient');
+  if (g === 'org') return deck.meta.org ? plain(deck.meta.org) : 'None';
+  if (g === 'nav') return (st.nav === 'thumbs' ? 'Rail' : 'Dots') + ' · ' + ({ fade:'Crossfade', slide:'Slide', zoom:'Zoom', none:'Cut' }[st.transition] || 'Crossfade');
+  if (g === 'timing') return st.targetMinutes ? st.targetMinutes + ' min' + (st.showProgress ? ' · bar on' : '') : 'No target';
+  if (g === 'auto') return st.autoPlay ? 'On · ' + st.autoSeconds + 's per slide' + (st.autoLoop ? ' · loop' : '') : 'Off';
+  return '';
+}
+function deckSettingsHTML() {
+  const st = deck.settings, open = deckGroupState();
+  const group = (g, title, body) => `<details class="dgroup" data-g="${g}" ${open[g] ? 'open' : ''}><summary><span>${title}</span><em data-gsum="${g}">${esc(deckGroupSummary(g))}</em></summary><div class="dg-body">${body}</div></details>`;
   return `
-    <div class="sechead">Deck settings</div>
+    ${group('look', 'Look', `
     <div class="field"><label>Theme</label>
       <button type="button" class="btn layoutbtn" id="d-theme"><span>${esc(theme(deck).name)}</span><span class="chg">Change…</span></button>
       <div class="hint">Opens a visual picker previewing your current slide in every theme. The theme travels inside the deck JSON.</div></div>
@@ -1356,11 +1589,18 @@ function deckSettingsHTML() {
       ${[['bg','Background'],['glow','Background glow'],['ink','Text'],['acc','Accent 1 (gold role)'],['acc2','Accent 2 (orange role)']].map(([k, lbl]) =>
         `<div class="colorrow"><span>${lbl}</span><input type="color" data-ctcolor="${k}" value="${esc((deck.customTheme||DEFAULT_CUSTOM)[k])}"></div>`).join('')}
       <div class="hint">A full theme — gradients, cards, chrome, particles — is derived from these five colors.</div></div>` : ''}
-    <div class="field"><label>Organization mark</label><input type="text" id="d-org" value="${esc(deck.meta.org || '')}" placeholder="e.g. Acme Corp · Confidential" maxlength="120">
+    <div class="field"><label class="checkrow"><input type="checkbox" id="d-amb" ${st.ambient?'checked':''}> Ambient animated background</label>
+      <select id="d-ambstyle" style="margin-top:8px" ${st.ambient?'':'disabled'}>${AMBIENT_STYLES.map(([k, lbl]) => `<option value="${k}" ${st.ambientStyle===k?'selected':''}>${lbl}</option>`).join('')}</select>
+      <div class="hint">Calm is the original subtle look; Particles come in a lively and a gentle version; Aurora sweeps color bands. All use the theme’s colors and show in the preview.</div></div>`)}
+
+    ${group('org', 'Organization mark', `
+    <div class="field"><label>Text</label><input type="text" id="d-org" value="${esc(deck.meta.org || '')}" placeholder="e.g. Acme Corp · Confidential" maxlength="120">
       <div class="hint">A company name, disclaimer, or copyright line shown small and faint on the left of every slide. Leave empty for none. Text markup works here.</div></div>
-    <div class="field"><label>Organization mark position</label>
+    <div class="field"><label>Position</label>
       <select id="d-orgpos"><option value="bottom" ${st.orgPos!=='top'?'selected':''}>Bottom-left (below content)</option><option value="top" ${st.orgPos==='top'?'selected':''}>Top-left (above content)</option></select>
-      <div class="hint">Hide it on individual slides — a title slide that already names you, say — with the checkbox in the Slide tab.</div></div>
+      <div class="hint">Hide it on individual slides — a title slide that already names you, say — with the checkbox in the Slide tab.</div></div>`)}
+
+    ${group('nav', 'Navigation & chrome', `
     <div class="field"><label>Navigation style</label>
       <select id="d-nav"><option value="dots" ${st.nav==='dots'?'selected':''}>Dot pills (bottom)</option><option value="thumbs" ${st.nav==='thumbs'?'selected':''}>Thumbnail rail (left)</option></select>
       <div class="hint">Press T while presenting to toggle the rail on the fly.</div></div>
@@ -1369,40 +1609,57 @@ function deckSettingsHTML() {
         <option value="slide" ${st.transition==='slide'?'selected':''}>Slide</option>
         <option value="zoom" ${st.transition==='zoom'?'selected':''}>Zoom</option>
         <option value="none" ${st.transition==='none'?'selected':''}>None (cut)</option></select></div>
-    <div class="field"><label class="checkrow"><input type="checkbox" id="d-auto" ${st.autoPlay?'checked':''}> Autoplay (kiosk mode)</label>
-      <div class="hint">Slides advance on their own. Press A while presenting to pause/resume.</div></div>
-    <div class="field"><label>Autoplay: seconds per slide</label><input type="number" class="in" id="d-autosec" min="2" max="600" value="${st.autoSeconds}"></div>
-    <div class="field"><label class="checkrow"><input type="checkbox" id="d-autoloop" ${st.autoLoop?'checked':''}> Loop back to the start</label></div>
-    <div class="field"><label>Target length (minutes, optional)</label><input type="number" class="in" id="d-target" min="1" max="600" value="${esc(st.targetMinutes)}" placeholder="none">
-      <div class="hint">The presenter HUD timer (P) turns orange near this target and red past it. R records per-slide timings for a rehearsal recap.</div></div>
     <div class="field"><label class="checkrow"><input type="checkbox" id="d-skip" ${st.showSkip?'checked':''}> Show “Skip to end” button</label></div>
     <div class="field"><label class="checkrow"><input type="checkbox" id="d-counter" ${st.showCounter?'checked':''}> Show slide counter (n / N)</label></div>
-    <div class="field"><label class="checkrow"><input type="checkbox" id="d-amb" ${st.ambient?'checked':''}> Ambient animated background</label></div>
-    <div class="field"><label class="checkrow"><input type="checkbox" id="d-hide" ${st.autoHideChrome?'checked':''}> Auto-hide navigation when idle</label></div>
-    <div class="divider"></div>
+    <div class="field"><label class="checkrow"><input type="checkbox" id="d-hide" ${st.autoHideChrome?'checked':''}> Auto-hide navigation when idle</label></div>`)}
+
+    ${group('timing', 'Timing', `
+    <div class="field"><label>Target length (minutes, optional)</label><input type="number" class="in" id="d-target" min="1" max="600" value="${esc(st.targetMinutes)}" placeholder="none">
+      <div class="hint">The presenter HUD timer (P) turns orange near this target and red past it. R records per-slide timings for a rehearsal recap.</div></div>
+    <div class="field"><label class="checkrow"><input type="checkbox" id="d-prog" ${st.showProgress?'checked':''}> Show target-time progress bar</label>
+      <div class="hint">A thin line along the bottom edge fills toward the target; a notch marks the current slide’s position, so fill behind the notch means ahead of schedule, past it means behind. Press H while presenting to show or hide it.</div></div>
+    <div class="field"><label>Presentation clock starts</label>
+      <select id="d-clock"><option value="open" ${st.clockStart!=='advance'?'selected':''}>When the show opens</option><option value="advance" ${st.clockStart==='advance'?'selected':''}>On the first slide change</option></select>
+      <div class="hint">Drives the HUD timer, its warning colors, and the progress bar. ⟲ in the HUD restarts it; reloading the page resets it.</div></div>`)}
+
+    ${group('auto', 'Autoplay (kiosk mode)', `
+    <div class="field"><label class="checkrow"><input type="checkbox" id="d-auto" ${st.autoPlay?'checked':''}> Autoplay</label>
+      <div class="hint">Slides advance on their own. Press A while presenting to pause/resume.</div></div>
+    <div class="field"><label>Seconds per slide</label><input type="number" class="in" id="d-autosec" min="2" max="600" value="${st.autoSeconds}">
+      <div class="hint">Override per slide with its Duration field in the Slide tab.</div></div>
+    <div class="field"><label class="checkrow"><input type="checkbox" id="d-autoloop" ${st.autoLoop?'checked':''}> Loop back to the start</label></div>`)}
+
     <div class="field"><button class="btn" data-act="sample" style="width:100%;white-space:normal">Load sample deck</button>
       <div class="hint">Opens as a new deck — your current deck is untouched.</div></div>`;
 }
 function bindDeckSettings(body) {
   const st = deck.settings;
+  /* collapsed headers carry a live one-line summary of the group */
+  const sums = () => $$('[data-gsum]', body).forEach(el => { el.textContent = deckGroupSummary(el.dataset.gsum); });
+  $$('.dgroup', body).forEach(d => d.addEventListener('toggle', () => {
+    try { const o = deckGroupState(); o[d.dataset.g] = d.open; localStorage.setItem('gr-dgroups', JSON.stringify(o)); } catch (e) {}
+  }));
   $('#d-theme', body).addEventListener('click', () => themePickerModal());
   $$('[data-ctcolor]', body).forEach(el => el.addEventListener('input', () => {
     deck.customTheme = deck.customTheme || Object.assign({}, DEFAULT_CUSTOM);
     deck.customTheme[el.dataset.ctcolor] = el.value;
     touch(); previewSoon();
   }));
-  $('#d-org', body).addEventListener('input', e => { deck.meta.org = e.target.value; touch(); previewSoon(); });
+  $('#d-org', body).addEventListener('input', e => { deck.meta.org = e.target.value; touch(); previewSoon(); sums(); });
   $('#d-orgpos', body).addEventListener('change', e => { st.orgPos = e.target.value; touch(); previewSoon(); });
-  $('#d-nav', body).addEventListener('change', e => { st.nav = e.target.value; touch(); });
-  $('#d-tr', body).addEventListener('change', e => { st.transition = e.target.value; touch(); });
-  [['#d-skip','showSkip'],['#d-counter','showCounter'],['#d-amb','ambient'],['#d-hide','autoHideChrome'],['#d-auto','autoPlay'],['#d-autoloop','autoLoop']].forEach(([selr, k]) => {
-    $(selr, body).addEventListener('change', e => { st[k] = e.target.checked; touch(); });
+  $('#d-nav', body).addEventListener('change', e => { st.nav = e.target.value; touch(); sums(); });
+  $('#d-tr', body).addEventListener('change', e => { st.transition = e.target.value; touch(); sums(); });
+  [['#d-skip','showSkip'],['#d-counter','showCounter'],['#d-hide','autoHideChrome'],['#d-auto','autoPlay'],['#d-autoloop','autoLoop'],['#d-prog','showProgress']].forEach(([selr, k]) => {
+    $(selr, body).addEventListener('change', e => { st[k] = e.target.checked; touch(); sums(); });
   });
+  $('#d-amb', body).addEventListener('change', e => { st.ambient = e.target.checked; $('#d-ambstyle', body).disabled = !st.ambient; touch(); previewSoon(); sums(); });
+  $('#d-ambstyle', body).addEventListener('change', e => { st.ambientStyle = e.target.value; touch(); previewSoon(); sums(); });
+  $('#d-clock', body).addEventListener('change', e => { st.clockStart = e.target.value; touch(); });
   $('#d-autosec', body).addEventListener('input', e => {
     const n = parseFloat(e.target.value);
-    if (n >= 2 && n <= 600) { st.autoSeconds = n; touch(); }
+    if (n >= 2 && n <= 600) { st.autoSeconds = n; touch(); sums(); }
   });
-  $('#d-target', body).addEventListener('input', e => { st.targetMinutes = e.target.value; touch(); });
+  $('#d-target', body).addEventListener('input', e => { st.targetMinutes = e.target.value; touch(); sums(); });
 }
 
 /* ---- live preview ---- */
@@ -1413,7 +1670,7 @@ function renderPreview(refit) {
   const t = theme(deck);
   box.style.background = t.bg;
   box.innerHTML = `<div style="position:absolute;inset:0;${themeVarStyle(t)}">
-    ${deck.settings.ambient ? `<div class="amb">${t.ambient()}</div>` : ''}
+    ${deck.settings.ambient ? `<div class="amb">${t.ambient(deck.settings.ambientStyle)}</div>` : ''}
     ${s ? renderStage(s, deck) : ''}
   </div>`;
   fitPreview();
@@ -1457,6 +1714,10 @@ function mapContent(old, k) {
           o.text = it.title + (it.sub ? ' — ' + it.sub : '');
         if (o.title === undefined && subKeys.includes('title') && typeof it.text === 'string')
           o.title = it.text;
+        /* heading-ish and body-ish sub-fields pour into each other across layouts */
+        const pick = (keys) => { for (const k2 of keys) if (typeof it[k2] === 'string' && it[k2]) return it[k2]; };
+        for (const hk of ['title', 'head', 'label', 'name']) if (o[hk] === undefined && subKeys.includes(hk)) { const v = pick(['title', 'head', 'label', 'name', 'text']); if (v !== undefined) o[hk] = v; }
+        for (const bk of ['body', 'sub', 'line']) if (o[bk] === undefined && subKeys.includes(bk)) { const v = pick(['body', 'sub', 'line', 'note']); if (v !== undefined) o[bk] = v; }
         return o;
       }).filter(o => Object.values(o).some(v => v !== '' && v !== undefined && v !== false));
       if (mapped.length) out[f.k] = mapped.slice(0, f.max || 9);
@@ -1669,7 +1930,7 @@ const GUIDE_TABS = {
     <h4>Building slides</h4>
     <ul>
       <li><b>+ Add slide</b> opens a visual picker — each card is a live preview of that layout. Slides land after the selected one.</li>
-      <li><b>21 layouts</b> cover titles, sections, lists, and comparisons, plus data (<b>Big Stats</b>, <b>Data Bars</b>, <b>Progress Ring</b>), <b>Quote</b>, <b>Process Flow</b>, <b>Before / After</b>, <b>Code Window</b>, <b>People Grid</b>, and <b>Do / Don’t</b> — all pure text, no images required.</li>
+      <li><b>27 layouts</b> cover titles, sections, lists, and comparisons, plus data (<b>Big Stats</b>, <b>Data Bars</b>, <b>Progress Ring</b>, <b>Data Table</b>, <b>Funnel</b>), <b>Quote</b>, <b>Process Flow</b>, <b>Before / After</b>, <b>Code Window</b>, <b>People Grid</b>, <b>Do / Don’t</b>, <b>Columns</b>, <b>2×2 Matrix</b>, <b>Checklist</b>, and <b>Feature Cards</b> — all pure text, no images required.</li>
       <li>Reorder by <b>dragging</b> in the left list (or the ▴▾ arrows on hover); hover also reveals <b>duplicate</b> and <b>delete</b>.</li>
       <li>Picked the wrong look? Use <b>Layout → Change…</b> in the right panel: it previews <i>your slide’s own content</i> in every layout before you commit.</li>
       <li><b>Group into sections:</b> add a <b>Section Splash</b>, then set <b>Parent section</b> on its detail slides — they inherit the section name as an eyebrow label and nest in the thumbnail rail.</li>
@@ -1698,8 +1959,10 @@ const GUIDE_TABS = {
       <li><code>L</code> is a <b>laser pointer</b>; <code>D</code> lets you <b>draw on the slide</b> to circle things (<code>C</code> clears, and ink wipes automatically when you change slides).</li>
       <li><code>G</code> opens a <b>slide grid</b> to jump anywhere visually; typing a <b>number + Enter</b> jumps directly; <code>B</code> blacks out the screen so eyes return to you.</li>
       <li><b>Rehearse with</b> <code>R</code>: it records how long you spend on each slide and shows a recap when you press it again. Set a target length in the Deck tab and the HUD timer warns as you approach it.</li>
+      <li><b>Target-time progress bar:</b> with a target length set, tick “Show target-time progress bar” in the Deck tab and a thin line along the bottom edge fills as time passes — gold, then orange near the target, red past it. A small notch marks where the current slide sits in the deck: fill behind the notch means you’re ahead, past it means behind. Press <code>H</code> during the show to hide or reveal it on the fly. The clock starts when the show opens or, if you prefer, on the first slide change; ⟲ in the HUD restarts it and a page reload resets it.</li>
       <li><b>Autoplay (kiosk mode)</b> in the Deck tab makes the deck run itself — set seconds per slide (or override per slide), optionally looping. <code>A</code> pauses/resumes it live.</li>
-      <li>The <b>Deck tab</b> (right panel) sets the theme — four looks, from deep emerald to light ivory — plus transition, dot-vs-rail navigation, slide counter, Skip-to-end button, ambient background, and an organization mark shown on every slide.</li>
+      <li>The <b>Deck tab</b> (right panel) sets the theme — four looks, from deep emerald to light ivory — plus transition, dot-vs-rail navigation, slide counter, Skip-to-end button, and an organization mark shown on every slide.</li>
+      <li><b>Ambient background</b> comes in four styles: <b>Calm</b> (soft orbs, a few drifting dots), <b>Particles</b> in a <b>lively</b> version (dozens of rising, twinkling motes with the occasional streak) and a <b>gentle</b> one (fewer, slower motes), and <b>Aurora</b> (slow sweeping bands of color). All follow the theme’s colors and show in the designer preview.</li>
       <li><b>Presenting elsewhere:</b> copy this HTML file to the machine, open it in a browser, <b>Import</b> your deck’s JSON, present. A refresh won’t lose anything — the deck is saved in that browser too.</li>
     </ul>` },
 
@@ -1807,11 +2070,15 @@ DECK STRUCTURE
     "showSkip": true|false          (show a Skip-to-end button),
     "showCounter": true|false       (show a "3 / 12" slide counter),
     "transition": "fade" | "slide" | "zoom" | "none",
-    "ambient": true|false           (animated background particles),
+    "ambient": true|false           (animated background),
+    "ambientStyle": "calm" | "particles" | "particlesSoft" | "aurora"   (background motion: soft orbs, lively rising motes, gentle slower motes, or sweeping color bands),
     "autoHideChrome": true|false    (navigation fades out when idle),
     "autoPlay": true|false          (kiosk mode: slides advance automatically),
     "autoSeconds": 8                (autoplay: seconds per slide),
     "autoLoop": true|false,         (autoplay: loop back to the first slide)
+    "targetMinutes": 20             (planned length in minutes; use "" when my outline doesn't say),
+    "showProgress": true|false      (thin bar along the bottom edge showing elapsed time vs targetMinutes, with a notch at the current slide's position),
+    "clockStart": "open" | "advance" (the presentation clock starts when the show opens, or on the first slide change),
     "orgPos": "bottom" | "top"      (where the organization mark sits: bottom-left below all content, or top-left above it)
   },
   "slides": [ <slide objects in presentation order> ]
@@ -2031,8 +2298,8 @@ function navStep(d) {
   if (p < 0) { p = v.findIndex(i => i > cur); if (p < 0) p = v.length - 1; if (d > 0) p--; }
   goTo(v[Math.max(0, Math.min(v.length - 1, p + d))]);
 }
-let chromeTimer = null, notesOn = false, helpOn = false, railOverride = null;
-let hudOn = false, hudStart = 0, hudInterval = null;
+let chromeTimer = null, notesOn = false, helpOn = false, railOverride = null, progOverride = null;
+let hudOn = false, hudStart = 0, hudInterval = null, progInterval = null;
 let autoRun = false, autoTimer = null;
 let laserOn = false, drawOn = false;
 let gridOn = false, blackOn = false, jumpBuf = '', jumpTimer = null;
@@ -2117,7 +2384,7 @@ function renderPresent() {
   if (deck.slides[cur].hidden) { const v = visIdx(); cur = v.find(i => i >= cur) ?? v[v.length - 1]; }
   $('#app').innerHTML = `
   <div id="present" style="background:${t.bg};${themeVarStyle(t)}">
-    ${deck.settings.ambient ? `<div class="amb">${t.ambient()}</div>` : ''}
+    ${deck.settings.ambient ? `<div class="amb">${t.ambient(deck.settings.ambientStyle)}</div>` : ''}
     <div class="stagepos" id="stagepos"><div class="layer" id="curlayer"></div></div>
     <canvas id="ink"></canvas>
     <div class="chrome" id="chrome"></div>
@@ -2128,16 +2395,50 @@ function renderPresent() {
     <div id="jumpind" style="display:none"></div>
     <div id="blackout" style="display:none"></div>
     <div id="laser" style="display:none"></div>
+    <div class="tprog" id="tprog" style="display:none" title="Elapsed time vs. target length"><i></i><b></b></div>
   </div>`;
   initInk();
   $('#curlayer').innerHTML = renderStage(deck.slides[cur], deck, '', { cueLift: deck.settings.showSkip, orgLift: deck.settings.showCounter });
-  hudStart = Date.now();
+  /* the presentation clock: starts now, or lazily on the first slide change (see goTo) */
+  hudStart = deck.settings.clockStart === 'advance' ? 0 : Date.now();
   autoRun = !!deck.settings.autoPlay;
   fitStage();
   renderChrome();
   wakeChrome();
   renderHud();
+  renderProgress();
   scheduleAuto();
+}
+
+/* elapsed presentation time; 0 until the clock has started */
+function elapsedMs() { return hudStart ? Date.now() - hudStart : 0; }
+function fmtMs(ms) {
+  const s = Math.floor(ms / 1000);
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+  return (h ? h + ':' + String(m).padStart(2,'0') : m) + ':' + String(sec).padStart(2,'0');
+}
+function targetMs() { const t = parseFloat(deck.settings.targetMinutes) * 60000; return t > 0 ? t : 0; }
+
+/* target-time progress bar along the bottom edge (independent of the auto-hiding chrome); H toggles it live */
+function progVisible() { return progOverride === null ? !!deck.settings.showProgress : progOverride; }
+function renderProgress() {
+  const el = $('#tprog'); if (!el) return;
+  clearInterval(progInterval); progInterval = null;
+  const target = targetMs();
+  if (!progVisible() || !target) { el.style.display = 'none'; return; }
+  el.style.display = '';
+  const v = visIdx(), notch = el.querySelector('b');
+  const pos = v.indexOf(cur);
+  notch.style.display = v.length > 1 && pos > 0 ? '' : 'none';
+  notch.style.left = (v.length > 1 ? Math.max(0, pos) / v.length * 100 : 0).toFixed(2) + '%';
+  const tick = () => {
+    const r = elapsedMs() / target;
+    el.querySelector('i').style.width = Math.min(100, r * 100).toFixed(2) + '%';
+    el.classList.toggle('warn', r >= .9 && r < 1);
+    el.classList.toggle('over', r >= 1);
+  };
+  tick();
+  progInterval = setInterval(() => { if ($('#tprog')) tick(); else { clearInterval(progInterval); progInterval = null; } }, 1000);
 }
 
 function scheduleAuto() {
@@ -2154,11 +2455,7 @@ function scheduleAuto() {
   }, secs * 1000);
 }
 
-function fmtElapsed() {
-  const s = Math.floor((Date.now() - hudStart) / 1000);
-  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
-  return (h ? h + ':' + String(m).padStart(2,'0') : m) + ':' + String(sec).padStart(2,'0');
-}
+function fmtElapsed() { return fmtMs(elapsedMs()); }
 
 function renderHud() {
   const el = $('#hud'); if (!el) return;
@@ -2171,13 +2468,13 @@ function renderHud() {
   el.style.left = (railVisible() ? 260 : 24) + 'px';
   el.innerHTML = `
     <div class="hud-top">
-      <span class="hud-timer" id="hudtimer">${fmtElapsed()}</span>
+      <span class="hud-timer" id="hudtimer">${fmtElapsed()}</span>${targetMs() ? `<span class="hud-target">/ ${fmtMs(targetMs())}</span>` : ''}
       <span class="hud-reset" data-hudreset="1" title="Restart timer">⟲</span>
       <span class="hud-lbl">${next ? 'Next · ' + esc(slideTitle(next)) : 'Last slide'}</span>
     </div>
     ${next ? `<div class="hud-next"><div class="hud-stage" style="background:${t.bg};${themeVarStyle(t)}">${renderStage(next, deck, 'static', { cue:false })}</div></div>` : ''}
     <div class="hud-notes">${esc(deck.slides[cur].notes) || '<span style="opacity:.45">No notes for this slide.</span>'}</div>`;
-  el.querySelector('[data-hudreset]').addEventListener('click', () => { hudStart = Date.now(); const tm = $('#hudtimer'); if (tm) tm.textContent = fmtElapsed(); });
+  el.querySelector('[data-hudreset]').addEventListener('click', () => { hudStart = Date.now(); const tm = $('#hudtimer'); if (tm) tm.textContent = fmtElapsed(); renderProgress(); });
   requestAnimationFrame(() => {
     const st = el.querySelector('.hud-stage');
     if (st) st.style.transform = `scale(${st.parentElement.getBoundingClientRect().width / 1920})`;
@@ -2185,9 +2482,9 @@ function renderHud() {
   const tint = () => {
     const tm = $('#hudtimer'); if (!tm) return;
     tm.textContent = fmtElapsed();
-    const target = parseFloat(deck.settings.targetMinutes) * 60000;
-    if (target > 0) {
-      const r = (Date.now() - hudStart) / target;
+    const target = targetMs();
+    if (target) {
+      const r = elapsedMs() / target;
       tm.style.color = r >= 1 ? '#ff7a66' : r >= .9 ? 'var(--acc2, #DE6B2C)' : '';
     }
   };
@@ -2267,6 +2564,7 @@ function helpHTML() {
       <tr><td class="k">P</td><td>Presenter HUD (timer · next slide · notes)</td></tr>
       <tr><td class="k">A</td><td>Pause / resume autoplay</td></tr>
       <tr><td class="k">T</td><td>Toggle thumbnail rail</td></tr>
+      <tr><td class="k">H</td><td>Show / hide the target-time progress bar (needs a target length)</td></tr>
       <tr><td class="k">L</td><td>Laser pointer</td></tr>
       <tr><td class="k">D</td><td>Draw on the slide (C clears; ink clears on slide change)</td></tr>
       <tr><td class="k">G</td><td>Slide grid — click any slide to jump</td></tr>
@@ -2292,6 +2590,7 @@ function goTo(n) {
   const i = Math.max(0, Math.min(deck.slides.length - 1, n));
   if (i === cur) return;
   if (recOn) recLog();
+  if (!hudStart) hudStart = Date.now();   /* clockStart === 'advance': first slide change starts the clock */
   const dir = i > cur ? 1 : -1;
   cur = i;
   const pos = $('#stagepos');
@@ -2318,6 +2617,7 @@ function goTo(n) {
   renderChrome();
   wakeChrome();
   renderHud();
+  renderProgress();
   scheduleAuto();
   clearInk();
 }
@@ -2386,10 +2686,10 @@ function renderPrint() {
 function switchMode(m) {
   if (PLAYER) m = 'present';
   mode = m;
-  notesOn = false; helpOn = false; railOverride = null;
+  notesOn = false; helpOn = false; railOverride = null; progOverride = null;
   hudOn = false; autoRun = false; laserOn = false; drawOn = false;
   gridOn = false; blackOn = false; jumpBuf = ''; recOn = false; recTimes = null;
-  clearTimeout(autoTimer); clearInterval(hudInterval); hudInterval = null; clearTimeout(jumpTimer);
+  clearTimeout(autoTimer); clearInterval(hudInterval); hudInterval = null; clearInterval(progInterval); progInterval = null; clearTimeout(jumpTimer);
   const hash = m === 'present' ? '#present' : m === 'print' ? '#print' : '';
   if (location.hash !== hash) { try { history.replaceState(null, '', location.pathname + location.search + hash); } catch (e) {} }
   if (m === 'present') cur = sel;
@@ -2509,6 +2809,7 @@ document.addEventListener('keydown', e => {
     else { recLog(); recOn = false; renderChrome(); showRecap(); }
   }
   else if (k === 't' || k === 'T') { railOverride = !railVisible(); renderChrome(); wakeChrome(); }
+  else if (k === 'h' || k === 'H') { progOverride = !progVisible(); renderProgress(); }
   else if (k === 'f' || k === 'F') {
     if (document.fullscreenElement) document.exitFullscreen();
     else document.documentElement.requestFullscreen && document.documentElement.requestFullscreen();
@@ -2544,6 +2845,11 @@ function sampleDeck() {
       { label:'Mid-market', value:'27', display:'27%', tone:'gold' },
       { label:'Self-serve', value:'11', display:'11%', tone:'orange' } ] }, { label:'Growth by segment', parentId: sec1.id }),
     S('ring', { value:'72', display:'', title:'of accounts renewed [[early]]', body:'Up from 41% this time last year.', tone:'gold' }, { label:'Early renewals', parentId: sec1.id }),
+    S('funnel', { title:'Trial to [[paid]]', items:[
+      { label:'Trials started', value:'6,200' },
+      { label:'Activated', value:'3,900', note:'63%' },
+      { label:'Invited a teammate', value:'2,100', note:'54%' },
+      { label:'Converted', value:'840', note:'40%' } ] }, { label:'Trial funnel', parentId: sec1.id }),
     S('callout', { badge:'Live Demo', title:'Let’s See It\n[[in Action]]' }, { label:'Live demo', parentId: sec1.id }),
     sec2,
     S('bullets', { title:'What we [[heard]]', items:[
@@ -2562,6 +2868,11 @@ function sampleDeck() {
       { title:'Shape', sub:'Two weeks to scope it' },
       { title:'Build', sub:'Six-week cycle' },
       { title:'Ship', sub:'Then we talk about it here' } ] }, { label:'Theme lifecycle', parentId: sec3.id }),
+    S('checklist', { title:'Q4 [[readiness]]', items:[
+      { text:'Themes and owners agreed', state:'done' },
+      { text:'Pricing simplification scoped', state:'done' },
+      { text:'Mobile parity plan in review', state:'now' },
+      { text:'Hiring plan approved', state:'todo' } ] }, { label:'Q4 readiness', parentId: sec3.id }),
     S('people', { title:'Who owns [[what]]', items:[
       { name:'Maya Chen', role:'Onboarding', line:'' },
       { name:'Tomás Rivera', role:'Mobile', line:'' },
